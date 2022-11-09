@@ -16,8 +16,8 @@ char pass[] = "password"; // WiFi Router password
 //const char* mqttServer = "test.mosquitto.org";
 const char* mqttServer = "192.168.5.66";
 const int mqttPort = 1883;
-const char* mqttUser = "jhughes";
-const char* mqttPassword = "jhughes10";
+const char* mqttUser = "mqtt_user";
+const char* mqttPassword = "mqtt_password";
 const char mainTopic[20] = "RoyalGorge/";
 
 //===========================================
