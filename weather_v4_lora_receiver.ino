@@ -23,7 +23,7 @@
 
 String rssi = "RSSI --";
 String packSize = "--";
-String packet ;
+String packet;
 byte packetBinary[128];
 
 float rssi_wifi;
@@ -34,8 +34,7 @@ float rssi_lora;
 //===========================================
 // Weather-environment structure
 //===========================================
-struct sensorData
-{
+struct sensorData {
   int windDirectionADC;
   int rainTicks24h;
   int rainTicks60m;
@@ -47,8 +46,7 @@ struct sensorData
   float lux;
 };
 
-struct diagnostics
-{
+struct diagnostics {
   float BMEtemperature;
   float batteryVoltage;
   int batteryADC;
@@ -74,7 +72,7 @@ void LoRaData() {
   MonPrintf("%s\n", buffer);
   MonPrintf("%f\n", rssi);
   //Heltec.display->display();
-  count ++;
+  count++;
 }
 
 //===========================================
@@ -85,21 +83,17 @@ void cbk(int packetSize) {
   packet = "";
   packSize = String(packetSize, DEC);
   for (int i = 0; i < packetSize; i++) {
-    packetBinary[i] = (char) LoRa.read();
+    packetBinary[i] = (char)LoRa.read();
   }
   //LoRa.receive
   rssi_lora = LoRa.packetRssi();
   rssi = "RSSI " + String(rssi_lora, DEC);
-  if (packetSize == 36)
-  {
+  if (packetSize == 36) {
     memcpy(&environment, &packetBinary, packetSize);
-  }
-  else
-  {
+  } else {
     memcpy(&hardware, &packetBinary, packetSize);
   }
   LoRaData();
-
 }
 
 //===========================================
@@ -114,7 +108,8 @@ void setup() {
   LoRa.setPins(18, 14, 26);
   if (!LoRa.begin(915E6)) {
     Serial.println("Starting LoRa failed!");
-    while (1);
+    while (1)
+      ;
   }
   //Heltec.display->init();
   //Heltec.display->flipScreenVertically();
@@ -152,14 +147,12 @@ void loop() {
     Serial.printf("\n\n\nPacket size: %i\n", packetSize);
     cbk(packetSize);
     //check for weather data packet
-    if (packetSize == 36)
-    {
+    if (packetSize == 36) {
       PrintEnvironment(environment);
       SendDataMQTT(environment);
     }
     //check for hardware data packet
-    else if (packetSize == 24)
-    {
+    else if (packetSize == 24) {
       PrintHardware(hardware);
       SendDataMQTT(hardware);
     }
@@ -171,15 +164,13 @@ void loop() {
 //===========================================
 // HexDump: output hex data of the environment structure - going away
 //===========================================
-void HexDump(int size)
-{
+void HexDump(int size) {
   //int size = 28;
   int x;
   char ch;
-  char *p = (char* ) &environment;
+  char* p = (char*)&environment;
 
-  for (x = 0; x < size; x++)
-  {
+  for (x = 0; x < size; x++) {
     //ch = *(p+x);
     Serial.printf("%02X ", p[x]);
   }
@@ -189,8 +180,7 @@ void HexDump(int size)
 //===========================================
 // PrintEnvironment: Dump environment structure to console
 //===========================================
-void PrintEnvironment(struct sensorData environment)
-{
+void PrintEnvironment(struct sensorData environment) {
   Serial.printf("Rain Ticks 24h: %i\n", environment.rainTicks24h);
   Serial.printf("Rain Ticks 60m: %i\n", environment.rainTicks60m);
   Serial.printf("Temperature: %f\n", environment.temperatureC);
@@ -205,8 +195,7 @@ void PrintEnvironment(struct sensorData environment)
 //===========================================
 // PrintEnvironment: Dump hardware structure to console
 //===========================================
-void PrintHardware(struct diagnostics hardware )
-{
+void PrintHardware(struct diagnostics hardware) {
   Serial.printf("Boot count: %i\n", hardware.bootCount);
   Serial.printf("Case Temperature: %f\n", hardware.BMEtemperature);
   Serial.printf("Battery voltage: %f\n", hardware.batteryVoltage);
@@ -218,12 +207,12 @@ void PrintHardware(struct diagnostics hardware )
 //===========================================
 // MonPrintf: diagnostic printf to terminal
 //===========================================
-void MonPrintf( const char* format, ... ) {
+void MonPrintf(const char* format, ...) {
   char buffer[200];
   va_list args;
   va_start(args, format);
   vsprintf(buffer, format, args);
-  va_end( args );
+  va_end(args);
 #ifdef SerialMonitor
   Serial.printf("%s", buffer);
 #endif
