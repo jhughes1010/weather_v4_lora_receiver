@@ -1,3 +1,5 @@
+//rename to config.h
+
 #define SerialMonitor
 //===========================================
 //LoRa band
