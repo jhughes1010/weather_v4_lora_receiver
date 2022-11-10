@@ -16,6 +16,7 @@ void SendDataMQTT(struct sensorData environment) {
   char bufferRain[10];
   char bufferRain24[10];
   float temperatureF;
+  float windSpeedMPH;
 
 
   //int hourPtr = timeinfo.tm_hour;
@@ -34,9 +35,10 @@ void SendDataMQTT(struct sensorData environment) {
     }
   }
   temperatureF = environment.temperatureC * 9 / 5 + 32;
+  windSpeedMPH = environment.windSpeed *1/1.609;
 
   MQTTPublish("imperial/temperature/", (int)temperatureF, true);
-  MQTTPublish("imperial/windSpeed/", environment.windSpeed, true);
+  MQTTPublish("imperial/windSpeed/", (int)windSpeedMPH, true);
   MQTTPublish("imperial/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011), true);
   MQTTPublish("imperial/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011), true);
 
@@ -44,7 +46,7 @@ void SendDataMQTT(struct sensorData environment) {
   MQTTPublish("metric/temperature/", (int)environment.temperatureC, true);
   MQTTPublish("metric/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011 * 25.4), true);
   MQTTPublish("metric/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011 * 25.4), true);
-
+  MQTTPublish("metric/pressure/", environment.barometricPressure, true);
 
   // TODO:  MQTTPublish("windDirection/", (int)environment.windDirection, true);
   //MQTTPublish("windCardinalDirection/", environment.windCardinalDirection, true);
@@ -53,7 +55,6 @@ void SendDataMQTT(struct sensorData environment) {
   MQTTPublish("lux/", environment.lux, true);
   MQTTPublish("UVIndex/", environment.UVIndex, true);
   MQTTPublish("relHum/", environment.humidity, true);
-  MQTTPublish("metric/pressure/", environment.barometricPressure, true);
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
   MonPrintf("Disconnected\n");
@@ -93,7 +94,7 @@ void SendDataMQTT(struct diagnostics hardware) {
   //MQTTPublish("ESPcoreF/", (int)hardware->coreF, true);
   MQTTPublish("ESPcoreC/", (int)hardware.coreC, true);
   //MQTTPublish("timeEnabled/", (int)elapsedTime, true);
-  //MQTTPublish("lowBattery/", lowBattery, true);
+  MQTTPublish("lowBattery/", false, true);    //TODO
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
   MonPrintf("Disconnected\n");
