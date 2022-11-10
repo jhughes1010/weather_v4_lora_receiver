@@ -33,3 +33,8 @@ const int daylightOffset_sec = 3600;
 //General defines
 //===========================================
 #define RSSI_INVALID -9999
+
+//===========================================
+//James Hughes is using a Heltec_LoRa_v2 for receiver
+//===========================================
+//#define DEV_HELTEC_RECEIVER
