@@ -7,7 +7,7 @@
 */
 
 //Hardware build target: ESP32
-#define VERSION "0.9.0"
+#define VERSION "1.0.2 beta"
 
 
 //#include "heltec.h"
