@@ -35,7 +35,7 @@ void SendDataMQTT(struct sensorData environment) {
     }
   }
   temperatureF = environment.temperatureC * 9 / 5 + 32;
-  windSpeedMPH = environment.windSpeed *1/1.609;
+  windSpeedMPH = environment.windSpeed * 1 / 1.609;
 
   MQTTPublish("imperial/temperature/", (int)temperatureF, true);
   MQTTPublish("imperial/windSpeed/", (int)windSpeedMPH, true);
@@ -85,16 +85,16 @@ void SendDataMQTT(struct diagnostics hardware) {
       delay(1000);
     }
   }
-  MQTTPublish("boot/", (int)hardware.bootCount, true);
-  MQTTPublish("rssi/", rssi_lora, true);
-  MQTTPublish("batteryVoltage/", hardware.batteryVoltage, true);
-
-  MQTTPublish("caseTemperature/", hardware.BMEtemperature, true);
-  MQTTPublish("batteryADC/", (int)hardware.batteryADC, true);
+  MQTTPublish("hardware/boot/", (int)hardware.bootCount, true);
+  MQTTPublish("hardware/rssi/", rssi_lora, true);
+  //MQTTPublish("batteryVoltage/", hardware.batteryVoltage, true);
+  MQTTPublish("hardware/chargeStatusB/", (bool)hardware.chargeStatusB, true);
+  MQTTPublish("hardware/caseTemperature/", hardware.BMEtemperature, true);
+  MQTTPublish("hardware/batteryADC/", (int)hardware.batteryADC, true);
   //MQTTPublish("ESPcoreF/", (int)hardware->coreF, true);
-  MQTTPublish("ESPcoreC/", (int)hardware.coreC, true);
+  MQTTPublish("hardware/ESPcoreC/", (int)hardware.coreC, true);
   //MQTTPublish("timeEnabled/", (int)elapsedTime, true);
-  MQTTPublish("lowBattery/", false, true);    //TODO
+  MQTTPublish("hardware/lowBattery/", false, true);    //TODO
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
   MonPrintf("Disconnected\n");

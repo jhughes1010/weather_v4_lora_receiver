@@ -48,11 +48,11 @@ struct sensorData {
 
 struct diagnostics {
   float BMEtemperature;
-  float batteryVoltage;
   int batteryADC;
   int solarADC;
   int coreC;
   int bootCount;
+  bool chargeStatusB;
 };
 
 struct sensorData environment;
@@ -198,7 +198,7 @@ void PrintEnvironment(struct sensorData environment) {
 void PrintHardware(struct diagnostics hardware) {
   Serial.printf("Boot count: %i\n", hardware.bootCount);
   Serial.printf("Case Temperature: %f\n", hardware.BMEtemperature);
-  Serial.printf("Battery voltage: %f\n", hardware.batteryVoltage);
+  //Serial.printf("Battery voltage: %f\n", hardware.batteryVoltage);
   Serial.printf("Battery ADC: %i\n", hardware.batteryADC);
   Serial.printf("Solar ADC: %i\n", hardware.solarADC);
   Serial.printf("ESP32 core temp C: %i\n", hardware.coreC);
