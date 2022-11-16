@@ -17,6 +17,7 @@ void SendDataMQTT(struct sensorData environment) {
   char bufferRain24[10];
   float temperatureF;
   float windSpeedMPH;
+  float mmHg;
 
 
   //int hourPtr = timeinfo.tm_hour;
@@ -36,11 +37,13 @@ void SendDataMQTT(struct sensorData environment) {
   }
   temperatureF = environment.temperatureC * 9 / 5 + 32;
   windSpeedMPH = environment.windSpeed * 1 / 1.609;
+  mmHg = environment.barometricPressure;
 
   MQTTPublish("imperial/temperature/", (int)temperatureF, true);
   MQTTPublish("imperial/windSpeed/", (int)windSpeedMPH, true);
   MQTTPublish("imperial/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011), true);
   MQTTPublish("imperial/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011), true);
+  MQTTPublish("imperial/pressure/", mmHg, true);
 
   MQTTPublish("metric/windSpeed/", environment.windSpeed, true);
   MQTTPublish("metric/temperature/", (int)environment.temperatureC, true);
@@ -52,9 +55,9 @@ void SendDataMQTT(struct sensorData environment) {
   //MQTTPublish("windCardinalDirection/", environment.windCardinalDirection, true);
 
 
-  MQTTPublish("lux/", environment.lux, true);
-  MQTTPublish("UVIndex/", environment.UVIndex, true);
-  MQTTPublish("relHum/", environment.humidity, true);
+  MQTTPublish("sensors/lux/", environment.lux, true);
+  MQTTPublish("sensors/UVIndex/", environment.UVIndex, true);
+  MQTTPublish("sensors/relHum/", environment.humidity, true);
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
   MonPrintf("Disconnected\n");
@@ -86,11 +89,12 @@ void SendDataMQTT(struct diagnostics hardware) {
     }
   }
   MQTTPublish("hardware/boot/", (int)hardware.bootCount, true);
-  MQTTPublish("hardware/rssi/", rssi_lora, true);
+  MQTTPublish("hardware/rssi/", (int)rssi_lora, true);
   //MQTTPublish("batteryVoltage/", hardware.batteryVoltage, true);
   MQTTPublish("hardware/chargeStatusB/", (bool)hardware.chargeStatusB, true);
   MQTTPublish("hardware/caseTemperature/", hardware.BMEtemperature, true);
-  MQTTPublish("hardware/batteryADC/", (int)hardware.batteryADC, true);
+  MQTTPublish("hardware/ADCbattery/", (int)hardware.batteryADC, true);
+  MQTTPublish("hardware/ADCsolar/", (int)hardware.solarADC, true);
   //MQTTPublish("ESPcoreF/", (int)hardware->coreF, true);
   MQTTPublish("hardware/ESPcoreC/", (int)hardware.coreC, true);
   //MQTTPublish("timeEnabled/", (int)elapsedTime, true);

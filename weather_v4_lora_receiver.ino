@@ -108,7 +108,7 @@ void setup() {
 #ifdef DEV_HELTEC_RECEIVER
   LoRa.setPins(18, 14, 26);
 #else
-  LoRa.setPins(18, 14, 26);
+  LoRa.setPins(15, 17, 13);
 #endif
   if (!LoRa.begin(915E6)) {
     Serial.println("Starting LoRa failed!");
