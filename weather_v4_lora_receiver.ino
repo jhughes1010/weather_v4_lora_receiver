@@ -105,6 +105,7 @@ void setup() {
   Serial.begin(115200);
 
   Serial.println("LoRa Receiver");
+  Serial.println(VERSION);
 #ifdef DEV_HELTEC_RECEIVER
   LoRa.setPins(18, 14, 26);
 #else

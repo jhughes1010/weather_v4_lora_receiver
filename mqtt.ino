@@ -18,7 +18,7 @@ void SendDataMQTT(struct sensorData environment) {
   float temperatureF;
   float windSpeedMPH;
   float mmHg;
-
+  float vBatttery, vSolar;
 
   //int hourPtr = timeinfo.tm_hour;
   client.setServer(mqttServer, mqttPort);
@@ -39,17 +39,17 @@ void SendDataMQTT(struct sensorData environment) {
   windSpeedMPH = environment.windSpeed * 1 / 1.609;
   mmHg = environment.barometricPressure;
 
-  MQTTPublish("imperial/temperature/", (int)temperatureF, true);
-  MQTTPublish("imperial/windSpeed/", (int)windSpeedMPH, true);
-  MQTTPublish("imperial/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011), true);
-  MQTTPublish("imperial/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011), true);
-  MQTTPublish("imperial/pressure/", mmHg, true);
+  MQTTPublish("sensors/imperial/temperature/", (int)temperatureF, true);
+  MQTTPublish("sensors/imperial/windSpeed/", (int)windSpeedMPH, true);
+  MQTTPublish("sensors/imperial/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011), true);
+  MQTTPublish("sensors/imperial/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011), true);
+  MQTTPublish("sensors/imperial/pressure/", mmHg, true);
 
-  MQTTPublish("metric/windSpeed/", environment.windSpeed, true);
-  MQTTPublish("metric/temperature/", (int)environment.temperatureC, true);
-  MQTTPublish("metric/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011 * 25.4), true);
-  MQTTPublish("metric/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011 * 25.4), true);
-  MQTTPublish("metric/pressure/", environment.barometricPressure, true);
+  MQTTPublish("sensors/metric/windSpeed/", environment.windSpeed, true);
+  MQTTPublish("sensors/metric/temperature/", (int)environment.temperatureC, true);
+  MQTTPublish("sensors/metric/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011 * 25.4), true);
+  MQTTPublish("sensors/metric/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011 * 25.4), true);
+  MQTTPublish("sensors/metric/pressure/", environment.barometricPressure, true);
 
   // TODO:  MQTTPublish("windDirection/", (int)environment.windDirection, true);
   //MQTTPublish("windCardinalDirection/", environment.windCardinalDirection, true);
@@ -71,6 +71,7 @@ void SendDataMQTT(struct diagnostics hardware) {
   char bufferTempC[5];
   char bufferRain[10];
   char bufferRain24[10];
+  float vBattery, vSolar;
 
 
   //int hourPtr = timeinfo.tm_hour;
@@ -88,9 +89,14 @@ void SendDataMQTT(struct diagnostics hardware) {
       delay(1000);
     }
   }
+
+  vSolar = (float)hardware.solarADC / 202;
+  vBattery = (float) hardware.batteryADC / 379;
+
   MQTTPublish("hardware/boot/", (int)hardware.bootCount, true);
   MQTTPublish("hardware/rssi/", (int)rssi_lora, true);
-  //MQTTPublish("batteryVoltage/", hardware.batteryVoltage, true);
+  MQTTPublish("hardware/vBattery/", (float) vBattery, true);
+  MQTTPublish("hardware/vSolar/", (float) vSolar, true);
   MQTTPublish("hardware/chargeStatusB/", (bool)hardware.chargeStatusB, true);
   MQTTPublish("hardware/caseTemperature/", hardware.BMEtemperature, true);
   MQTTPublish("hardware/ADCbattery/", (int)hardware.batteryADC, true);
