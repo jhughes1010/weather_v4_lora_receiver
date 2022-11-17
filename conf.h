@@ -4,7 +4,7 @@
 //===========================================
 //LoRa band
 //===========================================
-#define BAND 915E6  //you can set band here directly,e.g. 868E6,915E6
+#define BAND 915E6  //you can set band here directly,e.g. 868E6, 915E6, 433E6
 
 //===========================================
 //WiFi connection
@@ -33,3 +33,8 @@ const int daylightOffset_sec = 3600;
 //General defines
 //===========================================
 #define RSSI_INVALID -9999
+
+//===========================================
+//James Hughes is using a Heltec_LoRa_v2 for receiver
+//===========================================
+//#define DEV_HELTEC_RECEIVER
