@@ -3,7 +3,9 @@
 //Software design by James Hughes - jhughes1010@gmail.com
 
 /* History
-   0.9.0 10-2-22 Initial development for Heltec ESP32 LoRa v2 devkit
+   0.9.0 10-02-22 Initial development for Heltec ESP32 LoRa v2 devkit
+
+   1.0.2 11-17-22 Remapping all mqtt topics
 */
 
 //Hardware build target: ESP32
