@@ -3,11 +3,13 @@
 //Software design by James Hughes - jhughes1010@gmail.com
 
 /* History
-   0.9.0 10-2-22 Initial development for Heltec ESP32 LoRa v2 devkit
+   0.9.0 10-02-22 Initial development for Heltec ESP32 LoRa v2 devkit
+
+   1.0.2 11-17-22 Remapping all mqtt topics
 */
 
 //Hardware build target: ESP32
-#define VERSION "0.9.0"
+#define VERSION "1.0.2 beta"
 
 
 //#include "heltec.h"
@@ -48,11 +50,11 @@ struct sensorData {
 
 struct diagnostics {
   float BMEtemperature;
-  float batteryVoltage;
   int batteryADC;
   int solarADC;
   int coreC;
   int bootCount;
+  bool chargeStatusB;
 };
 
 struct sensorData environment;
@@ -105,7 +107,12 @@ void setup() {
   Serial.begin(115200);
 
   Serial.println("LoRa Receiver");
+  Serial.println(VERSION);
+#ifdef DEV_HELTEC_RECEIVER
   LoRa.setPins(18, 14, 26);
+#else
+  LoRa.setPins(15, 17, 13);
+#endif
   if (!LoRa.begin(915E6)) {
     Serial.println("Starting LoRa failed!");
     while (1)
@@ -198,7 +205,7 @@ void PrintEnvironment(struct sensorData environment) {
 void PrintHardware(struct diagnostics hardware) {
   Serial.printf("Boot count: %i\n", hardware.bootCount);
   Serial.printf("Case Temperature: %f\n", hardware.BMEtemperature);
-  Serial.printf("Battery voltage: %f\n", hardware.batteryVoltage);
+  //Serial.printf("Battery voltage: %f\n", hardware.batteryVoltage);
   Serial.printf("Battery ADC: %i\n", hardware.batteryADC);
   Serial.printf("Solar ADC: %i\n", hardware.solarADC);
   Serial.printf("ESP32 core temp C: %i\n", hardware.coreC);
