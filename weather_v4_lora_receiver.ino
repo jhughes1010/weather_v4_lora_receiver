@@ -57,8 +57,14 @@ struct diagnostics {
   bool chargeStatusB;
 };
 
+struct derived {
+char cardinalDirection[5];
+float degrees;
+};
+
 struct sensorData environment;
 struct diagnostics hardware;
+struct derived wind;
 
 //===========================================
 // LoRaData: acknowledge LoRa packet received on OLED

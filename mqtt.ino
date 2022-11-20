@@ -38,6 +38,7 @@ void SendDataMQTT(struct sensorData environment) {
   temperatureF = environment.temperatureC * 9 / 5 + 32;
   windSpeedMPH = environment.windSpeed * 1 / 1.609;
   mmHg = environment.barometricPressure;
+  setWindDirection(environment.windDirectionADC);
 
   MQTTPublish("sensors/imperial/temperature/", (int)temperatureF, true);
   MQTTPublish("sensors/imperial/windSpeed/", (int)windSpeedMPH, true);
@@ -51,8 +52,8 @@ void SendDataMQTT(struct sensorData environment) {
   MQTTPublish("sensors/metric/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011 * 25.4), true);
   MQTTPublish("sensors/metric/pressure/", environment.barometricPressure, true);
 
-  // TODO:  MQTTPublish("windDirection/", (int)environment.windDirection, true);
-  //MQTTPublish("windCardinalDirection/", environment.windCardinalDirection, true);
+  MQTTPublish("sensors/windDirection/", (float)wind.degrees, true);
+  MQTTPublish("sensors/windCardinalDirection/", wind.cardinalDirection, true);
 
 
   MQTTPublish("sensors/lux/", environment.lux, true);
@@ -91,12 +92,12 @@ void SendDataMQTT(struct diagnostics hardware) {
   }
 
   vSolar = (float)hardware.solarADC / 202;
-  vBattery = (float) hardware.batteryADC / 379;
+  vBattery = (float)hardware.batteryADC / 379;
 
   MQTTPublish("hardware/boot/", (int)hardware.bootCount, true);
   MQTTPublish("hardware/rssi/", (int)rssi_lora, true);
-  MQTTPublish("hardware/vBattery/", (float) vBattery, true);
-  MQTTPublish("hardware/vSolar/", (float) vSolar, true);
+  MQTTPublish("hardware/vBattery/", (float)vBattery, true);
+  MQTTPublish("hardware/vSolar/", (float)vSolar, true);
   MQTTPublish("hardware/chargeStatusB/", (bool)hardware.chargeStatusB, true);
   MQTTPublish("hardware/caseTemperature/", hardware.BMEtemperature, true);
   MQTTPublish("hardware/ADCbattery/", (int)hardware.batteryADC, true);
@@ -104,7 +105,7 @@ void SendDataMQTT(struct diagnostics hardware) {
   //MQTTPublish("ESPcoreF/", (int)hardware->coreF, true);
   MQTTPublish("hardware/ESPcoreC/", (int)hardware.coreC, true);
   //MQTTPublish("timeEnabled/", (int)elapsedTime, true);
-  MQTTPublish("hardware/lowBattery/", false, true);    //TODO
+  MQTTPublish("hardware/lowBattery/", false, true);  //TODO
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
   MonPrintf("Disconnected\n");
