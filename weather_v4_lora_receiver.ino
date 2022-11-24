@@ -6,10 +6,12 @@
    0.9.0 10-02-22 Initial development for Heltec ESP32 LoRa v2 devkit
 
    1.0.2 11-17-22 Remapping all mqtt topics
+
+   1.1.0 11-24-22 sensor structure expanded to receive max wind speed also
 */
 
 //Hardware build target: ESP32
-#define VERSION "1.0.2 beta"
+#define VERSION "1.1.0"
 
 
 //#include "heltec.h"
@@ -42,6 +44,7 @@ struct sensorData {
   int rainTicks60m;
   float temperatureC;
   float windSpeed;
+  float windSpeedMax;
   float barometricPressure;
   float humidity;
   float UVIndex;
@@ -96,7 +99,7 @@ void cbk(int packetSize) {
   //LoRa.receive
   rssi_lora = LoRa.packetRssi();
   rssi = "RSSI " + String(rssi_lora, DEC);
-  if (packetSize == 36) {
+  if (packetSize == 40) {
     memcpy(&environment, &packetBinary, packetSize);
   } else {
     memcpy(&hardware, &packetBinary, packetSize);
@@ -160,7 +163,7 @@ void loop() {
     Serial.printf("\n\n\nPacket size: %i\n", packetSize);
     cbk(packetSize);
     //check for weather data packet
-    if (packetSize == 36) {
+    if (packetSize == 40) {
       PrintEnvironment(environment);
       SendDataMQTT(environment);
     }
