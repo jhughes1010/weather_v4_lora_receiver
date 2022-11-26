@@ -17,6 +17,7 @@ void SendDataMQTT(struct sensorData environment) {
   char bufferRain24[10];
   float temperatureF;
   float windSpeedMPH;
+  float windSpeedMaxMPH;
   float mmHg;
   float vBatttery, vSolar;
 
@@ -37,16 +38,19 @@ void SendDataMQTT(struct sensorData environment) {
   }
   temperatureF = environment.temperatureC * 9 / 5 + 32;
   windSpeedMPH = environment.windSpeed * 1 / 1.609;
+  windSpeedMaxMPH = environment.windSpeedMax/1.609;
   mmHg = environment.barometricPressure;
   setWindDirection(environment.windDirectionADC);
 
   MQTTPublish("sensors/imperial/temperature/", (int)temperatureF, true);
-  MQTTPublish("sensors/imperial/windSpeed/", (int)windSpeedMPH, true);
+  MQTTPublish("sensors/imperial/windSpeed/", (float)windSpeedMPH, true);
+  MQTTPublish("sensors/imperial/windSpeedMax/", (float)windSpeedMaxMPH, true);
   MQTTPublish("sensors/imperial/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011), true);
   MQTTPublish("sensors/imperial/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011), true);
   MQTTPublish("sensors/imperial/pressure/", mmHg, true);
 
-  MQTTPublish("sensors/metric/windSpeed/", environment.windSpeed, true);
+  MQTTPublish("sensors/metric/windSpeed/", (float)environment.windSpeed, true);
+  MQTTPublish("sensors/metric/windSpeedMax/", (float)environment.windSpeedMax, true);
   MQTTPublish("sensors/metric/temperature/", (int)environment.temperatureC, true);
   MQTTPublish("sensors/metric/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011 * 25.4), true);
   MQTTPublish("sensors/metric/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011 * 25.4), true);
