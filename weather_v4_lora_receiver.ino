@@ -6,10 +6,13 @@
    0.9.0 10-02-22 Initial development for Heltec ESP32 LoRa v2 devkit
 
    1.0.2 11-17-22 Remapping all mqtt topics
+
+   1.1.0 11-24-22 sensor structure expanded to receive max wind speed also
+                  LED online for Heltec board
 */
 
 //Hardware build target: ESP32
-#define VERSION "1.0.2 beta"
+#define VERSION "1.1.0"
 
 
 //#include "heltec.h"
@@ -21,7 +24,10 @@
 //#include <time.h>
 #include <BlynkSimpleEsp32.h>
 #include <PubSubClient.h>
-
+#ifdef DEV_HELTEC_RECEIVER
+#include <Wire.h>
+#include <U8g2lib.h>
+#endif
 
 String rssi = "RSSI --";
 String packSize = "--";
@@ -31,7 +37,7 @@ byte packetBinary[128];
 float rssi_wifi;
 float rssi_lora;
 
-
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C led(U8G2_R0, /* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
 
 //===========================================
 // Weather-environment structure
@@ -42,6 +48,7 @@ struct sensorData {
   int rainTicks60m;
   float temperatureC;
   float windSpeed;
+  float windSpeedMax;
   float barometricPressure;
   float humidity;
   float UVIndex;
@@ -57,8 +64,14 @@ struct diagnostics {
   bool chargeStatusB;
 };
 
+struct derived {
+  char cardinalDirection[5];
+  float degrees;
+};
+
 struct sensorData environment;
 struct diagnostics hardware;
+struct derived wind;
 
 //===========================================
 // LoRaData: acknowledge LoRa packet received on OLED
@@ -90,7 +103,7 @@ void cbk(int packetSize) {
   //LoRa.receive
   rssi_lora = LoRa.packetRssi();
   rssi = "RSSI " + String(rssi_lora, DEC);
-  if (packetSize == 36) {
+  if (packetSize == 40) {
     memcpy(&environment, &packetBinary, packetSize);
   } else {
     memcpy(&hardware, &packetBinary, packetSize);
@@ -102,9 +115,11 @@ void cbk(int packetSize) {
 // setup:
 //===========================================
 void setup() {
-  //WIFI Kit series V1 not support Vext control
-  //Heltec.begin(true /*DisplayEnable Enable*/, true /*Heltec.Heltec.Heltec.LoRa Disable*/, true /*Serial Enable*/, true /*PABOOST Enable*/, BAND /*long BAND*/);
   Serial.begin(115200);
+#ifdef DEV_HELTEC_RECEIVER
+  led.begin();
+  LEDTitle();
+#endif
 
   Serial.println("LoRa Receiver");
   Serial.println(VERSION);
@@ -118,16 +133,6 @@ void setup() {
     while (1)
       ;
   }
-  //Heltec.display->init();
-  //Heltec.display->flipScreenVertically();
-  //Heltec.display->setFont(ArialMT_Plain_10);
-
-  //Heltec.display->clear();
-
-  //Heltec.display->drawString(0, 0, "Heltec.LoRa Initial success!");
-  //Heltec.display->drawString(0, 10, "Wait for incoming data...");
-  //Heltec.display->display();
-
   LoRa.receive();
 
   wifi_connect();
@@ -139,22 +144,18 @@ void setup() {
 // loop:
 //===========================================
 void loop() {
-
+  static int count = 0;
   int packetSize = LoRa.parsePacket();
-  /* if (millis() % 300000 <= 10)
-    {
-     MonPrintf("\nCalibrating RTC\n");
-     printLocalTime();
-     //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-     printLocalTime();
-     delay(100);
-    }*/
 
   if (packetSize) {
     Serial.printf("\n\n\nPacket size: %i\n", packetSize);
     cbk(packetSize);
+    count++;
+#ifdef DEV_HELTEC_RECEIVER
+    LEDStatus(count);
+#endif
     //check for weather data packet
-    if (packetSize == 36) {
+    if (packetSize == 40) {
       PrintEnvironment(environment);
       SendDataMQTT(environment);
     }
