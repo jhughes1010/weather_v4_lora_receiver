@@ -8,11 +8,14 @@
    1.0.2 11-17-22 Remapping all mqtt topics
 
    1.1.0 11-24-22 sensor structure expanded to receive max wind speed also
-                  LED online for Heltec board
+                  LED display online for Heltec board
+
+   1.1.1 12-13-22 Error in code where non-Heltec build would not compile properly
+                  Missing #ifdef statements were added to correct this                  
 */
 
 //Hardware build target: ESP32
-#define VERSION "1.1.0"
+#define VERSION "1.1.1"
 
 
 //#include "heltec.h"
@@ -37,7 +40,9 @@ byte packetBinary[128];
 float rssi_wifi;
 float rssi_lora;
 
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C led(U8G2_R0, /* clock=*/ 15, /* data=*/ 4, /* reset=*/ 16);
+#ifdef DEV_HELTEC_RECEIVER
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C led(U8G2_R0, /* clock=*/15, /* data=*/4, /* reset=*/16);
+#endif
 
 //===========================================
 // Weather-environment structure
