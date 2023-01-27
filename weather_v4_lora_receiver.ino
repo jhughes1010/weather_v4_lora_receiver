@@ -11,11 +11,15 @@
                   LED display online for Heltec board
 
    1.1.1 12-13-22 Error in code where non-Heltec build would not compile properly
-                  Missing #ifdef statements were added to correct this                  
+                  Missing #ifdef statements were added to correct this 
+
+   1.1.2 01-27-23 Packet type details added to display.
+                  Explicitly checking both packet sizes before memcpy
+                  Added WDT of 10sec in case of hang up in loop()                 
 */
 
 //Hardware build target: ESP32
-#define VERSION "1.1.1"
+#define VERSION "1.1.2"
 
 
 //#include "heltec.h"
@@ -111,7 +115,7 @@ void cbk(int packetSize) {
   rssi = "RSSI " + String(rssi_lora, DEC);
   if (packetSize == 40) {
     memcpy(&environment, &packetBinary, packetSize);
-  } else {
+  } else if (packetSize == 24) {
     memcpy(&hardware, &packetBinary, packetSize);
   }
   LoRaData();
@@ -156,15 +160,22 @@ void setup() {
 //===========================================
 void loop() {
   esp_task_wdt_reset();
-  static int count = 0;
+  static int count = 0, Scount = 0, Hcount = 0, Xcount = 0;
   int packetSize = LoRa.parsePacket();
 
   if (packetSize) {
     Serial.printf("\n\n\nPacket size: %i\n", packetSize);
     cbk(packetSize);
     count++;
+    if (packetSize == 24) {
+      Hcount++;
+    } else if (packetSize == 40) {
+      Scount++;
+    } else {
+      Xcount++;
+    }
 #ifdef DEV_HELTEC_RECEIVER
-    LEDStatus(count);
+    LEDStatus(count, Scount, Hcount, Xcount);
 #endif
     //check for weather data packet
     if (packetSize == 40) {

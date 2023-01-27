@@ -10,11 +10,24 @@ void LEDTitle(void) {
   led.sendBuffer();  // transfer internal memory to the display
 }
 
-void LEDStatus(int count) {
+void LEDStatus(int count, int Scount, int Hcount, int Xcount) {
   led.clearBuffer();  // clear the internal memory
-  led.setCursor(0, 16);
-  led.print("Rx #: ");
+  led.setCursor(0, 15);
+  led.print("Tot #: ");
   led.print(count);
+
+  led.setCursor(0, 31);
+  led.print("Sen #: ");
+  led.print(Scount);
+
+  led.setCursor(0, 47);
+  led.print("Hdw #: ");
+  led.print(Hcount);
+
+  led.setCursor(0, 63);
+  led.print("XXX #: ");
+  led.print(Xcount);
+  
   led.sendBuffer();  // transfer internal memory to the display
 }
 #endif
