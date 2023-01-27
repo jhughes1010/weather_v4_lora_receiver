@@ -39,6 +39,7 @@ void SendDataMQTT(struct sensorData environment) {
   temperatureF = environment.temperatureC * 9 / 5 + 32;
   windSpeedMPH = environment.windSpeed * 1 / 1.609;
   windSpeedMaxMPH = environment.windSpeedMax/1.609;
+  //TODO: Need to calculate mmHg properly
   mmHg = environment.barometricPressure;
   setWindDirection(environment.windDirectionADC);
 

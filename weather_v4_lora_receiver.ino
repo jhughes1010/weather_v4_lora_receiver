@@ -24,6 +24,7 @@
 
 #include "config.h"
 #include <esp_wifi.h>
+#include <esp_task_wdt.h>
 //#include <time.h>
 #include <BlynkSimpleEsp32.h>
 #include <PubSubClient.h>
@@ -121,6 +122,11 @@ void cbk(int packetSize) {
 //===========================================
 void setup() {
   Serial.begin(115200);
+
+  //Enable WDT for any lock-up events
+  esp_task_wdt_init(WDT_TIMEOUT, true);
+  esp_task_wdt_add(NULL);
+
 #ifdef DEV_HELTEC_RECEIVER
   led.begin();
   LEDTitle();
@@ -149,6 +155,7 @@ void setup() {
 // loop:
 //===========================================
 void loop() {
+  esp_task_wdt_reset();
   static int count = 0;
   int packetSize = LoRa.parsePacket();
 
