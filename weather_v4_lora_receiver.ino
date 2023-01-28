@@ -40,7 +40,7 @@
 String rssi = "RSSI --";
 String packSize = "--";
 String packet;
-byte packetBinary[128];
+byte packetBinary[512];
 
 float rssi_wifi;
 float rssi_lora;
