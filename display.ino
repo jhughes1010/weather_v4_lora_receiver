@@ -27,7 +27,18 @@ void LEDStatus(int count, int Scount, int Hcount, int Xcount) {
   led.setCursor(0, 63);
   led.print("XXX #: ");
   led.print(Xcount);
-  
+
   led.sendBuffer();  // transfer internal memory to the display
+}
+
+void blink(int count) {
+  Serial.println("blink");
+  int x;
+  for (x = 0; x < count; x++) {
+    digitalWrite(LED, HIGH);
+    delay(100);
+    digitalWrite(LED, LOW);
+    delay(150);
+  }
 }
 #endif

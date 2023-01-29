@@ -15,7 +15,9 @@
 
    1.1.2 01-27-23 Packet type details added to display.
                   Explicitly checking both packet sizes before memcpy
-                  Added WDT of 10sec in case of hang up in loop()                 
+                  Added WDT of 30 sec in case of hang up in loop() 
+                  Set sender and receiver sync word to filter correct transmissions
+                  Add 10 sec heartbeat LED for Heltec PCB                
 */
 
 //Hardware build target: ESP32
@@ -140,6 +142,7 @@ void setup() {
   Serial.println(VERSION);
 #ifdef DEV_HELTEC_RECEIVER
   LoRa.setPins(18, 14, 26);
+  pinMode(LED, OUTPUT);
 #else
   LoRa.setPins(15, 17, 13);
 #endif
@@ -152,7 +155,8 @@ void setup() {
 
   wifi_connect();
   //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
-  MonPrintf("LoRa receiver is online");
+  LoRa.setSyncWord(SYNC);
+  MonPrintf("LoRa receiver is online\n");
 }
 
 //===========================================
@@ -176,6 +180,8 @@ void loop() {
     }
 #ifdef DEV_HELTEC_RECEIVER
     LEDStatus(count, Scount, Hcount, Xcount);
+
+
 #endif
     //check for weather data packet
     if (packetSize == 40) {
@@ -190,6 +196,11 @@ void loop() {
     //HexDump(packetSize);
   }
   delay(10);
+#ifdef DEV_HELTEC_RECEIVER
+  if (millis() % 10000 < 100) {
+    blink(2);
+  }
+#endif
 }
 
 //===========================================

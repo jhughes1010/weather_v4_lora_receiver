@@ -1,12 +1,14 @@
 //rename to config.h
 
 #define SerialMonitor
+
+#define SYNC 0xc7
 //===========================================
 //LoRa band
 //===========================================
 #define BAND 915E6  //you can set band here directly,e.g. 868E6, 915E6, 433E6
 
-#define WDT_TIMEOUT 10   //watchdog timer
+#define WDT_TIMEOUT 30   //watchdog timer
 
 //===========================================
 //WiFi connection
