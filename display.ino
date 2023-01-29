@@ -32,7 +32,6 @@ void LEDStatus(int count, int Scount, int Hcount, int Xcount) {
 }
 
 void blink(int count) {
-  Serial.println("blink");
   int x;
   for (x = 0; x < count; x++) {
     digitalWrite(LED, HIGH);
