@@ -55,6 +55,7 @@ U8G2_SSD1306_128X64_NONAME_F_SW_I2C led(U8G2_R0, /* clock=*/15, /* data=*/4, /* 
 // Weather-environment structure
 //===========================================
 struct sensorData {
+  int deviceID;
   int windDirectionADC;
   int rainTicks24h;
   int rainTicks60m;
@@ -68,6 +69,7 @@ struct sensorData {
 };
 
 struct diagnostics {
+  int deviceID;
   float BMEtemperature;
   int batteryADC;
   int solarADC;
@@ -92,13 +94,7 @@ void LoRaData() {
   static int count = 1;
   char buffer[20];
   sprintf(buffer, "Count: %i", count);
-  //  Heltec.display->clear();
-  //Heltec.display->setTextAlignment(TEXT_ALIGN_LEFT);
-  //Heltec.display->setFont(ArialMT_Plain_10);
-  MonPrintf("%s\n", "Received " + packSize + " bytes");
   MonPrintf("%s\n", buffer);
-  MonPrintf("%f\n", rssi);
-  //Heltec.display->display();
   count++;
 }
 
@@ -115,9 +111,9 @@ void cbk(int packetSize) {
   //LoRa.receive
   rssi_lora = LoRa.packetRssi();
   rssi = "RSSI " + String(rssi_lora, DEC);
-  if (packetSize == 40) {
+  if (packetSize == sizeof(environment)) {
     memcpy(&environment, &packetBinary, packetSize);
-  } else if (packetSize == 24) {
+  } else if (packetSize == sizeof(hardware)) {
     memcpy(&hardware, &packetBinary, packetSize);
   }
   LoRaData();
@@ -155,8 +151,9 @@ void setup() {
 
   wifi_connect();
   //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  LoRa.enableCrc();
   LoRa.setSyncWord(SYNC);
-  MonPrintf("LoRa receiver is online\n");
+  Serial.printf("LoRa receiver is online\n");
 }
 
 //===========================================
@@ -168,39 +165,34 @@ void loop() {
   int packetSize = LoRa.parsePacket();
 
   if (packetSize) {
-    Serial.printf("\n\n\nPacket size: %i\n", packetSize);
+    Serial.printf("\nPacket size: %i\n", packetSize);
     cbk(packetSize);
     count++;
-    if (packetSize == 24) {
+    if (packetSize == sizeof(hardware)) {
       Hcount++;
-    } else if (packetSize == 40) {
+    } else if (packetSize == sizeof(environment)) {
       Scount++;
     } else {
       Xcount++;
     }
+
 #ifdef DEV_HELTEC_RECEIVER
     LEDStatus(count, Scount, Hcount, Xcount);
-
-
 #endif
+
     //check for weather data packet
-    if (packetSize == 40) {
+    if (packetSize == sizeof(environment)) {
       PrintEnvironment(environment);
       SendDataMQTT(environment);
     }
     //check for hardware data packet
-    else if (packetSize == 24) {
+    else if (packetSize == sizeof(hardware)) {
       PrintHardware(hardware);
       SendDataMQTT(hardware);
     }
     //HexDump(packetSize);
   }
   delay(10);
-#ifdef DEV_HELTEC_RECEIVER
-  if (millis() % 10000 < 100) {
-    blink(2);
-  }
-#endif
 }
 
 //===========================================
@@ -223,27 +215,27 @@ void HexDump(int size) {
 // PrintEnvironment: Dump environment structure to console
 //===========================================
 void PrintEnvironment(struct sensorData environment) {
-  Serial.printf("Rain Ticks 24h: %i\n", environment.rainTicks24h);
-  Serial.printf("Rain Ticks 60m: %i\n", environment.rainTicks60m);
-  Serial.printf("Temperature: %f\n", environment.temperatureC);
-  Serial.printf("Wind speed: %f\n", environment.windSpeed);
+  MonPrintf("Rain Ticks 24h: %i\n", environment.rainTicks24h);
+  MonPrintf("Rain Ticks 60m: %i\n", environment.rainTicks60m);
+  MonPrintf("Temperature: %f\n", environment.temperatureC);
+  MonPrintf("Wind speed: %f\n", environment.windSpeed);
   //TODO:  Serial.printf("Wind direction: %f\n", environment.windDirection);
-  Serial.printf("barometer: %f\n", environment.barometricPressure);
-  Serial.printf("Humidity: %f\n", environment.humidity);
-  Serial.printf("UV Index: %f\n", environment.UVIndex);
-  Serial.printf("Lux: %f\n", environment.lux);
+  MonPrintf("barometer: %f\n", environment.barometricPressure);
+  MonPrintf("Humidity: %f\n", environment.humidity);
+  MonPrintf("UV Index: %f\n", environment.UVIndex);
+  MonPrintf("Lux: %f\n", environment.lux);
 }
 
 //===========================================
 // PrintEnvironment: Dump hardware structure to console
 //===========================================
 void PrintHardware(struct diagnostics hardware) {
-  Serial.printf("Boot count: %i\n", hardware.bootCount);
-  Serial.printf("Case Temperature: %f\n", hardware.BMEtemperature);
+  MonPrintf("Boot count: %i\n", hardware.bootCount);
+  MonPrintf("Case Temperature: %f\n", hardware.BMEtemperature);
   //Serial.printf("Battery voltage: %f\n", hardware.batteryVoltage);
-  Serial.printf("Battery ADC: %i\n", hardware.batteryADC);
-  Serial.printf("Solar ADC: %i\n", hardware.solarADC);
-  Serial.printf("ESP32 core temp C: %i\n", hardware.coreC);
+  MonPrintf("Battery ADC: %i\n", hardware.batteryADC);
+  MonPrintf("Solar ADC: %i\n", hardware.solarADC);
+  MonPrintf("ESP32 core temp C: %i\n", hardware.coreC);
 }
 
 //===========================================

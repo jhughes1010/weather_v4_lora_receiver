@@ -10,6 +10,8 @@
 
 #define WDT_TIMEOUT 30   //watchdog timer
 
+#define DEVID 0x11223344
+
 //===========================================
 //WiFi connection
 //===========================================
