@@ -10,6 +10,14 @@ void LEDTitle(void) {
   led.sendBuffer();  // transfer internal memory to the display
 }
 
+void OLEDConnectWiFi(void) {
+  led.clearBuffer();  // clear the internal memory
+  led.setFont(u8g2_font_logisoso16_tf);
+  led.setCursor(0, 16);
+  led.print("WiFi on");
+  led.sendBuffer();
+}
+
 void LEDStatus(int count, int Scount, int Hcount, int Xcount) {
   led.clearBuffer();  // clear the internal memory
   led.setCursor(0, 15);

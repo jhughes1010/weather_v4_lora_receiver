@@ -144,12 +144,13 @@ void setup() {
 #endif
   if (!LoRa.begin(915E6)) {
     Serial.println("Starting LoRa failed!");
-    while (1)
-      ;
+    while (1);
   }
   LoRa.receive();
-
   wifi_connect();
+#ifdef DEV_HELTEC_RECEIVER
+  OLEDConnectWiFi();
+#endif
   //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   LoRa.enableCrc();
   LoRa.setSyncWord(SYNC);
@@ -164,33 +165,33 @@ void loop() {
   static int count = 0, Scount = 0, Hcount = 0, Xcount = 0;
   int packetSize = LoRa.parsePacket();
 
+  environment.deviceID = 0;
+  hardware.deviceID = 0;
+
   if (packetSize) {
-    Serial.printf("\nPacket size: %i\n", packetSize);
-    cbk(packetSize);
     count++;
-    if (packetSize == sizeof(hardware)) {
-      Hcount++;
-    } else if (packetSize == sizeof(environment)) {
+    cbk(packetSize);
+    Serial.printf("Packet size: %i\n", packetSize);
+
+    MonPrintf("Environment deviceID %x\n", environment.deviceID);
+    MonPrintf("Hardware deviceID %x\n", hardware.deviceID);
+    //check for weather data packet
+    if (packetSize == sizeof(environment) && environment.deviceID == DEVID) {
+      PrintEnvironment(environment);
+      SendDataMQTT(environment);
       Scount++;
+    }
+    //check for hardware data packet
+    else if (packetSize == sizeof(hardware) && hardware.deviceID == DEVID) {
+      PrintHardware(hardware);
+      SendDataMQTT(hardware);
+      Hcount++;
     } else {
       Xcount++;
     }
-
 #ifdef DEV_HELTEC_RECEIVER
     LEDStatus(count, Scount, Hcount, Xcount);
 #endif
-
-    //check for weather data packet
-    if (packetSize == sizeof(environment)) {
-      PrintEnvironment(environment);
-      SendDataMQTT(environment);
-    }
-    //check for hardware data packet
-    else if (packetSize == sizeof(hardware)) {
-      PrintHardware(hardware);
-      SendDataMQTT(hardware);
-    }
-    //HexDump(packetSize);
   }
   delay(10);
 }

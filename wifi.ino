@@ -1,25 +1,17 @@
 //=======================================================================
-//  wifi_connect: connect to WiFi or explicitly connect to Blynk, if used
+//  wifi_connect: connect to WiFi. Replys on WDT to reset unit if no connection exists.
 //=======================================================================
 long wifi_connect(void) {
   bool WiFiConnectHalt = false;
-  int retry = 0;
   long wifi_signal = 0;
 
   MonPrintf("Connecting to WiFi\n");
   WiFi.begin(ssid, pass);
   while (WiFi.status() != WL_CONNECTED && !WiFiConnectHalt) {
+    MonPrintf("WiFi - attempting to connect\n");
     delay(500);
-    retry++;
-    if (retry > 15) {
-      MonPrintf("Max trys to connect to WiFi reached and failed");
-      WiFiConnectHalt = true;
-      wifi_signal = RSSI_INVALID;
-      return wifi_signal;
-    }
-
-    MonPrintf("WiFi connected\n");
-    wifi_signal = WiFi.RSSI();
   }
+  MonPrintf("WiFi connected\n");
+  wifi_signal = WiFi.RSSI();
   return wifi_signal;
 }

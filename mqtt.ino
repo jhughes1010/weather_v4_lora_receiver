@@ -33,7 +33,8 @@ void SendDataMQTT(struct sensorData environment) {
     } else {
       Serial.print("failed with state ");
       Serial.print(client.state());
-      delay(1000);
+      //delay(1000);
+      while(1);
     }
   }
   temperatureF = environment.temperatureC * 9 / 5 + 32;
@@ -92,7 +93,8 @@ void SendDataMQTT(struct diagnostics hardware) {
     } else {
       Serial.print("failed with state ");
       Serial.print(client.state());
-      delay(1000);
+      while(1);
+      //delay(1000);
     }
   }
 
