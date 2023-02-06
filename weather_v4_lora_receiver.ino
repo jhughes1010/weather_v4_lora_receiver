@@ -17,14 +17,15 @@
                   Explicitly checking both packet sizes before memcpy
                   Added WDT of 30 sec in case of hang up in loop() 
                   Set sender and receiver sync word to filter correct transmissions
-                  Add 10 sec heartbeat LED for Heltec PCB                
+                  Add 10 sec heartbeat LED for Heltec PCB  
+
+   1.2.0 02-06-23 e-ink display support (400x300) waveshare
 */
 
 //Hardware build target: ESP32
-#define VERSION "1.1.2"
+#define VERSION "1.2.0"
 
-
-//#include "heltec.h"
+#include <time.h>
 #include <LoRa.h>
 #include <spi.h>
 
@@ -39,6 +40,27 @@
 #include <U8g2lib.h>
 #endif
 
+//e-ink display support
+#include <GxEPD.h>
+#include <GxGDEW042T2/GxGDEW042T2.h>  // 4.2" b/w
+#include <Fonts/FreeMonoBold9pt7b.h>
+#include <Fonts/FreeMonoBold12pt7b.h>
+#include <Fonts/FreeMonoBold18pt7b.h>
+#include <Fonts/FreeMonoBold24pt7b.h>
+#include <GxIO/GxIO_SPI/GxIO_SPI.h>
+#include <GxIO/GxIO.h>
+
+#ifdef DEV_HELTEC_RECEIVER
+GxIO_Class io(SPI, /*CS=5*/ SS, /*DC=*/17, /*RST=*/23);
+GxEPD_Class display(io, /*RST=*/23, /*BUSY=*/2);
+#else
+//Debasish - make edits here
+GxIO_Class io(SPI, /*CS=5*/ SS, /*DC=*/17, /*RST=*/23);
+GxEPD_Class display(io, /*RST=*/23, /*BUSY=*/2);
+#endif
+
+
+
 String rssi = "RSSI --";
 String packSize = "--";
 String packet;
@@ -46,6 +68,9 @@ byte packetBinary[512];
 
 float rssi_wifi;
 float rssi_lora;
+
+time_t now;
+struct tm timeinfo;
 
 #ifdef DEV_HELTEC_RECEIVER
 U8G2_SSD1306_128X64_NONAME_F_SW_I2C led(U8G2_R0, /* clock=*/15, /* data=*/4, /* reset=*/16);
@@ -124,6 +149,7 @@ void cbk(int packetSize) {
 //===========================================
 void setup() {
   Serial.begin(115200);
+  display.init(115200);  // enable diagnostic output on Serial
 
   //Enable WDT for any lock-up events
   esp_task_wdt_init(WDT_TIMEOUT, true);
@@ -144,7 +170,8 @@ void setup() {
 #endif
   if (!LoRa.begin(BAND)) {
     Serial.println("Starting LoRa failed!");
-    while (1);
+    while (1)
+      ;
   }
   LoRa.receive();
   wifi_connect();
@@ -155,6 +182,8 @@ void setup() {
   LoRa.enableCrc();
   LoRa.setSyncWord(SYNC);
   Serial.printf("LoRa receiver is online\n");
+  title();
+  configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 }
 
 //===========================================
@@ -168,6 +197,10 @@ void loop() {
   environment.deviceID = 0;
   hardware.deviceID = 0;
 
+  if (millis()%36000==0){
+    configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
+  }
+
   if (packetSize) {
     count++;
     cbk(packetSize);
@@ -180,12 +213,14 @@ void loop() {
       PrintEnvironment(environment);
       SendDataMQTT(environment);
       Scount++;
+      consoleUpdate();
     }
     //check for hardware data packet
     else if (packetSize == sizeof(hardware) && hardware.deviceID == DEVID) {
       PrintHardware(hardware);
       SendDataMQTT(hardware);
       Hcount++;
+      consoleUpdate();
     } else {
       Xcount++;
     }

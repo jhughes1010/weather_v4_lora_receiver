@@ -1,4 +1,4 @@
-struct tm timeinfo;
+//struct tm timeinfo;
 
 //=======================================================================
 //  printLocalTime: prints local timezone based time
