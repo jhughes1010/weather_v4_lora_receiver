@@ -1,3 +1,7 @@
+
+//U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
+
+
 void title() {
   const GFXfont* f = &FreeMonoBold9pt7b;
   display.fillScreen(GxEPD_WHITE);
@@ -20,7 +24,7 @@ void consoleUpdate(void) {
   display.setFont(f);
   box();
   lastUpdate();
-  DrawBattery(100, 15);
+  DisplayStatusSection(100, 100,-95);
   display.update();
 }
 
@@ -33,6 +37,17 @@ void lastUpdate(void) {
 
 void box(void) {
   display.drawRect(0, 0, 399, 278, GxEPD_BLACK);
+}
+//#########################################################################################
+void DisplayStatusSection(int x, int y, int rssi) {
+  display.drawRect(x - 28, y - 26, 115, 51, GxEPD_BLACK);
+  display.drawLine(x - 28, y - 14, x - 28 + 114, y - 14, GxEPD_BLACK);
+  display.drawLine(x - 28 + 115 / 2, y - 15, x - 28 + 115 / 2, y - 26, GxEPD_BLACK);
+  //u8g2Fonts.setFont(u8g2_font_helvR08_tf);
+  //drawString(x, y - 24, TXT_WIFI, CENTER);
+  //drawString(x + 55, y - 24, TXT_POWER, CENTER);
+  //DrawRSSI(x - 8, y + 5, rssi);
+  DrawBattery(x + 47, y + 5);;
 }
 
 void DrawBattery(int x, int y) {
@@ -49,6 +64,18 @@ void DrawBattery(int x, int y) {
     display.fillRect(x + 34, y - 10, 2, 5, GxEPD_BLACK);
     display.fillRect(x + 17, y - 10, 15 * percentage / 100.0, 6, GxEPD_BLACK);
     //drawString(x + 10, y - 11, String(percentage) + "%", RIGHT);
-    //drawString(x + 13, y + 5,  String(voltage, 2) + "v", CENTER);
+    drawString(x + 13, y + 5,  String(voltage, 2) + "v", CENTER);
   }
+}
+
+//#########################################################################################
+void drawString(int x, int y, String text, alignment align) {
+  int16_t  x1, y1; //the bounds of x,y and w and h of the variable 'text' in pixels.
+  uint16_t w, h;
+  display.setTextWrap(false);
+  display.getTextBounds(text, x, y, &x1, &y1, &w, &h);
+  if (align == RIGHT)  x = x - w;
+  if (align == CENTER) x = x - w / 2;
+  u8g2Fonts.setCursor(x, y + h);
+  u8g2Fonts.print(text);
 }
