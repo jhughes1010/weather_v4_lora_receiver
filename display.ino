@@ -1,4 +1,4 @@
-#ifdef DEV_HELTEC_RECEIVER
+#ifdef DEV_HELTEC_RECEIVER_LED
 void LEDTitle(void) {
   led.enableUTF8Print();
   led.clearBuffer();  // clear the internal memory

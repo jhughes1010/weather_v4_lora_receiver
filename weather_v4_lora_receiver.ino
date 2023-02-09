@@ -34,21 +34,43 @@
 #include <esp_task_wdt.h>
 //#include <time.h>
 #include <BlynkSimpleEsp32.h>
-#include <PubSubClient.h>
+//#include <PubSubClient.h>
 #ifdef DEV_HELTEC_RECEIVER
 #include <Wire.h>
-#include <U8g2lib.h>
+//#include <U8g2lib.h>
 #endif
-
+#include <U8g2_for_Adafruit_GFX.h>
 //e-ink display support
 #include <GxEPD.h>
 #include <GxGDEW042T2/GxGDEW042T2.h>  // 4.2" b/w
-#include <Fonts/FreeMonoBold9pt7b.h>
-#include <Fonts/FreeMonoBold12pt7b.h>
-#include <Fonts/FreeMonoBold18pt7b.h>
-#include <Fonts/FreeMonoBold24pt7b.h>
 #include <GxIO/GxIO_SPI/GxIO_SPI.h>
 #include <GxIO/GxIO.h>
+#include "fonts.h"
+#include "owm_credentials.h"
+#include "forecast_record.h"
+#include "lang.h"
+
+#define autoscale_on  true
+#define autoscale_off false
+#define barchart_on   true
+#define barchart_off  false
+
+#define max_readings 24
+
+float pressure_readings[max_readings]    = {0};
+float temperature_readings[max_readings] = {0};
+float humidity_readings[max_readings]    = {0};
+float rain_readings[max_readings]        = {0};
+float snow_readings[max_readings]        = {0};
+
+
+
+
+Forecast_record_type WxConditions[1];
+Forecast_record_type WxForecast[max_readings];
+
+#include "common.h"
+
 
 #ifdef DEV_HELTEC_RECEIVER
 GxIO_Class io(SPI, /*CS=5*/ SS, /*DC=*/17, /*RST=*/23);
@@ -59,11 +81,23 @@ GxIO_Class io(SPI, /*CS=5*/ SS, /*DC=*/17, /*RST=*/23);
 GxEPD_Class display(io, /*RST=*/23, /*BUSY=*/2);
 #endif
 
+#define SCREEN_WIDTH 400.0  // Set for landscape mode, don't remove the decimal place!
+#define SCREEN_HEIGHT 300.0
 
+#ifdef DEV_HELTEC_RECEIVER_LED
+U8G2_SSD1306_128X64_NONAME_F_SW_I2C led(U8G2_R0, /* clock=*/15, /* data=*/4, /* reset=*/16);
+#endif
+
+enum alignment { LEFT,
+                 RIGHT,
+                 CENTER };
+U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
 
 String rssi = "RSSI --";
 String packSize = "--";
 String packet;
+String timeCurr;
+String dateCurr;
 byte packetBinary[512];
 
 float rssi_wifi;
@@ -72,9 +106,14 @@ float rssi_lora;
 time_t now;
 struct tm timeinfo;
 
-#ifdef DEV_HELTEC_RECEIVER
-U8G2_SSD1306_128X64_NONAME_F_SW_I2C led(U8G2_R0, /* clock=*/15, /* data=*/4, /* reset=*/16);
-#endif
+bool RxWeather = false, RxForecast = false;
+WiFiClient clientt;
+
+boolean LargeIcon = true, SmallIcon = false;
+#define Large  11           // For icon drawing, needs to be odd number for best effect
+#define Small  5            // For icon drawing, needs to be odd number for best effect
+
+
 
 //===========================================
 // Weather-environment structure
@@ -155,7 +194,7 @@ void setup() {
   esp_task_wdt_init(WDT_TIMEOUT, true);
   esp_task_wdt_add(NULL);
 
-#ifdef DEV_HELTEC_RECEIVER
+#ifdef DEV_HELTEC_RECEIVER_LED
   led.begin();
   LEDTitle();
 #endif
@@ -175,7 +214,7 @@ void setup() {
   }
   LoRa.receive();
   wifi_connect();
-#ifdef DEV_HELTEC_RECEIVER
+#ifdef DEV_HELTEC_RECEIVER_LED
   OLEDConnectWiFi();
 #endif
   //configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
@@ -197,7 +236,7 @@ void loop() {
   environment.deviceID = 0;
   hardware.deviceID = 0;
 
-  if (millis()%36000==0){
+  if (millis() % 36000 == 0) {
     configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
   }
 
@@ -213,18 +252,24 @@ void loop() {
       PrintEnvironment(environment);
       SendDataMQTT(environment);
       Scount++;
-      consoleUpdate();
+      RxWeather = obtain_wx_data(clientt, "weather");
+      RxForecast = obtain_wx_data(clientt, "forecast");
+      DisplayWeather();
+      display.update();
     }
     //check for hardware data packet
     else if (packetSize == sizeof(hardware) && hardware.deviceID == DEVID) {
       PrintHardware(hardware);
       SendDataMQTT(hardware);
       Hcount++;
-      consoleUpdate();
+      RxWeather = obtain_wx_data(clientt, "weather");
+      RxForecast = obtain_wx_data(clientt, "forecast");
+      DisplayWeather();
+      display.update();
     } else {
       Xcount++;
     }
-#ifdef DEV_HELTEC_RECEIVER
+#ifdef DEV_HELTEC_RECEIVER_LED
     LEDStatus(count, Scount, Hcount, Xcount);
 #endif
   }
