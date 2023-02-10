@@ -21,12 +21,12 @@ char pass[] = "password";  // WiFi Router password
 //===========================================
 //MQTT broker connection
 //===========================================
-//const char* mqttServer = "test.mosquitto.org";
-const char* mqttServer = "192.168.5.66";
-const int mqttPort = 1883;
-const char* mqttUser = "mqtt_user";
-const char* mqttPassword = "mqtt_password";
-const char mainTopic[20] = "RoyalGorgee/";
+const char* mqttServer = "91.121.93.94";  //test.mosquitto.org
+//const char* mqttServer = "192.168.5.66";
+const int mqttPort = 1884;
+const char* mqttUser = "wo";
+const char* mqttPassword = "writeonly";
+const char mainTopic[20] = "RoyalGorgeTest/";
 
 //===========================================
 //Timezone information

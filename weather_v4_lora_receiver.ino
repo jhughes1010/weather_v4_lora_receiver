@@ -30,14 +30,11 @@
 #include <spi.h>
 
 #include "config.h"
-#include <esp_wifi.h>
+#include <WiFi.h>
 #include <esp_task_wdt.h>
-//#include <time.h>
-#include <BlynkSimpleEsp32.h>
-//#include <PubSubClient.h>
+#include <PubSubClient.h>
 #ifdef DEV_HELTEC_RECEIVER
 #include <Wire.h>
-//#include <U8g2lib.h>
 #endif
 #include <U8g2_for_Adafruit_GFX.h>
 //e-ink display support
