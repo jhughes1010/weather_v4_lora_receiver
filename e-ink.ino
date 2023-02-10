@@ -11,12 +11,13 @@ void title() {
   u8g2Fonts.setBackgroundColor(GxEPD_WHITE);  // apply Adafruit GFX color
   u8g2Fonts.setFont(u8g2_font_helvB10_tf);    // select u8g2 font from here: https://github.com/olikraus/u8g2/wiki/fntlistall
   display.fillScreen(GxEPD_WHITE);
-  drawString(100, 100, "James Hughes", CENTER);
-  u8g2Fonts.setFont(u8g2_font_helvB08_tf);
+  //drawString(100, 100, "James Hughes", CENTER);
+  //u8g2Fonts.setFont(u8g2_font_helvB08_tf);
   //display.fillScreen(GxEPD_WHITE);
   //display.setTextColor(GxEPD_BLACK);
   //u8g2Fonts.setCursor(0, 0);
   //display.println();
+  u8g2Fonts.setCursor(0, 12);
   u8g2Fonts.println("Weather Station v4");
   u8g2Fonts.println(VERSION);
   u8g2Fonts.println("Debasish Dutta/ James Hughes");
