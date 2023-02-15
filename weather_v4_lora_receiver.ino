@@ -47,18 +47,18 @@
 #include "forecast_record.h"
 #include "lang.h"
 
-#define autoscale_on  true
+#define autoscale_on true
 #define autoscale_off false
-#define barchart_on   true
-#define barchart_off  false
+#define barchart_on true
+#define barchart_off false
 
 #define max_readings 24
 
-float pressure_readings[max_readings]    = {0};
-float temperature_readings[max_readings] = {0};
-float humidity_readings[max_readings]    = {0};
-float rain_readings[max_readings]        = {0};
-float snow_readings[max_readings]        = {0};
+float pressure_readings[max_readings] = { 0 };
+float temperature_readings[max_readings] = { 0 };
+float humidity_readings[max_readings] = { 0 };
+float rain_readings[max_readings] = { 0 };
+float snow_readings[max_readings] = { 0 };
 
 
 
@@ -107,8 +107,8 @@ bool RxWeather = false, RxForecast = false;
 WiFiClient clientt;
 
 boolean LargeIcon = true, SmallIcon = false;
-#define Large  11           // For icon drawing, needs to be odd number for best effect
-#define Small  5            // For icon drawing, needs to be odd number for best effect
+#define Large 9  // For icon drawing, needs to be odd number for best effect
+#define Small 5  // For icon drawing, needs to be odd number for best effect
 
 
 
@@ -151,7 +151,7 @@ struct derived wind;
 //===========================================
 // LoRaData: acknowledge LoRa packet received on OLED
 //===========================================
-void LoRaData() {
+void LoRaData_dep() {
   static int count = 1;
   char buffer[20];
   sprintf(buffer, "Count: %i", count);
@@ -177,7 +177,6 @@ void cbk(int packetSize) {
   } else if (packetSize == sizeof(hardware)) {
     memcpy(&hardware, &packetBinary, packetSize);
   }
-  LoRaData();
 }
 
 //===========================================
@@ -227,7 +226,9 @@ void setup() {
 //===========================================
 void loop() {
   esp_task_wdt_reset();
+  static int timeOfReport = 0;
   static int count = 0, Scount = 0, Hcount = 0, Xcount = 0;
+  static bool displayFlag = false;
   int packetSize = LoRa.parsePacket();
 
   environment.deviceID = 0;
@@ -253,6 +254,8 @@ void loop() {
       RxForecast = obtain_wx_data(clientt, "forecast");
       DisplayWeather();
       display.update();
+      timeOfReport = millis();
+      displayFlag = false;
     }
     //check for hardware data packet
     else if (packetSize == sizeof(hardware) && hardware.deviceID == DEVID) {
@@ -263,14 +266,23 @@ void loop() {
       RxForecast = obtain_wx_data(clientt, "forecast");
       DisplayWeather();
       display.update();
+      timeOfReport = millis();
+      displayFlag = false;
     } else {
       Xcount++;
     }
+
 #ifdef DEV_HELTEC_RECEIVER_LED
     LEDStatus(count, Scount, Hcount, Xcount);
 #endif
   }
   delay(10);
+
+  //TX packet not received in some time???
+  if (!displayFlag && millis() - timeOfReport > 30 * 60 * 1000) {
+    displayError();
+    displayFlag = true;
+  }
 }
 
 //===========================================

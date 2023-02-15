@@ -1,7 +1,9 @@
 
 //U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
 
-
+//===========================================
+// title: Startup screen
+//===========================================
 void title() {
   Serial.println("Title block entered");
   u8g2Fonts.begin(display);                   // connect u8g2 procedures to Adafruit GFX
@@ -11,31 +13,34 @@ void title() {
   u8g2Fonts.setBackgroundColor(GxEPD_WHITE);  // apply Adafruit GFX color
   u8g2Fonts.setFont(u8g2_font_helvB10_tf);    // select u8g2 font from here: https://github.com/olikraus/u8g2/wiki/fntlistall
   display.fillScreen(GxEPD_WHITE);
-  //drawString(100, 100, "James Hughes", CENTER);
-  //u8g2Fonts.setFont(u8g2_font_helvB08_tf);
-  //display.fillScreen(GxEPD_WHITE);
-  //display.setTextColor(GxEPD_BLACK);
-  //u8g2Fonts.setCursor(0, 0);
-  //display.println();
   u8g2Fonts.setCursor(0, 12);
-  u8g2Fonts.println("Weather Station v4");
+  u8g2Fonts.println("Weather Station v4 - LoRa Receiver");
   u8g2Fonts.println(VERSION);
   u8g2Fonts.println("Debasish Dutta/ James Hughes");
   display.drawCircle(200, 150, 30, GxEPD_BLACK);
   display.drawCircle(200, 150, 32, GxEPD_BLACK);
   display.update();
 }
-/*
-void consoleUpdated(void) {
-  const GFXfont* f = &FreeMonoBold9pt7b;
+
+//===========================================
+// displayError: Warning for no recent LoRa activity
+//===========================================
+void displayError() {
+  Serial.println("TX data not received in some time now.");
+  u8g2Fonts.begin(display);                   // connect u8g2 procedures to Adafruit GFX
+  u8g2Fonts.setFontMode(1);                   // use u8g2 transparent mode (this is default)
+  u8g2Fonts.setFontDirection(0);              // left to right (this is default)
+  u8g2Fonts.setForegroundColor(GxEPD_BLACK);  // apply Adafruit GFX color
+  u8g2Fonts.setBackgroundColor(GxEPD_WHITE);  // apply Adafruit GFX color
+  u8g2Fonts.setFont(u8g2_font_helvB10_tf);    // select u8g2 font from here: https://github.com/olikraus/u8g2/wiki/fntlistall
   display.fillScreen(GxEPD_WHITE);
-  display.setTextColor(GxEPD_BLACK);
-  display.setFont(f);
-  box();
-  lastUpdate();
-  DisplayStatusSection(100, 100,-95);
+  u8g2Fonts.setCursor(0, 12);
+  u8g2Fonts.println("LoRa weather not updated recently.");
+  u8g2Fonts.println("Station may be offline.");
+  u8g2Fonts.println(VERSION);
   display.update();
-}*/
+}
+
 //#########################################################################################
 void consoleUpdate() {   // 4.2" e-paper display is 400x300 resolution
   DrawHeadingSection();  // Top line of the display
@@ -134,7 +139,7 @@ void DrawMainWx(int x, int y) {
 }
 //#########################################################################################
 void DisplayDisplayWindSection(int x, int y, float angle, float windspeed, int Cradius) {
-  arrow(x, y, Cradius - 7, angle, 12, 18);  // Show wind direction on outer circle of width and length
+  arrow(x, y, 20, 90, 0, 15);  // Show wind direction on outer circle of width and length
   u8g2Fonts.setFont(u8g2_font_helvB08_tf);
   int dxo, dyo, dxi, dyi;
   display.drawLine(0, 15, 0, y + Cradius + 30, GxEPD_BLACK);
@@ -214,10 +219,10 @@ void DisplayPrecipitationSection(int x, int y) {
 }
 
 void DrawBattery(int x, int y) {
-  uint8_t percentage = 85;
-  //float voltage = analogRead(35) / 4096.0 * 7.46;
-  //float voltage = atof(batteryVoltage);
-  float voltage = 4.05;
+  float voltage = (float)hardware.batteryADC / 379;
+  uint8_t percentage;
+
+
   if (voltage > 1) {  // Only display if there is a valid reading
     Serial.println("Voltage = " + String(voltage));
     percentage = 2836.9625 * pow(voltage, 4) - 43987.4889 * pow(voltage, 3) + 255233.8134 * pow(voltage, 2) - 656689.7123 * voltage + 632041.7303;
@@ -226,7 +231,6 @@ void DrawBattery(int x, int y) {
     display.drawRect(x + 15, y - 12, 19, 10, GxEPD_BLACK);
     display.fillRect(x + 34, y - 10, 2, 5, GxEPD_BLACK);
     display.fillRect(x + 17, y - 10, 15 * percentage / 100.0, 6, GxEPD_BLACK);
-    //drawString(x + 65, y - 11, buffer, RIGHT);
     drawString(x + 65, y - 11, String(percentage) + "%", RIGHT);
   }
 }

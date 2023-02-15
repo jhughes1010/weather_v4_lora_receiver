@@ -37,6 +37,13 @@ void LEDStatus(int count, int Scount, int Hcount, int Xcount) {
   led.print(Xcount);
 
   led.sendBuffer();  // transfer internal memory to the display
+
+#ifdef SerialMonitor
+  Serial.printf("Total Count: %i\n", count);
+  Serial.printf("Total Sensor Count: %i\n", Scount);
+  Serial.printf("Total Hardware Count: %i\n", Hcount);
+  Serial.printf("Total XXX Count: %i\n", Xcount);
+#endif
 }
 
 void blink(int count) {

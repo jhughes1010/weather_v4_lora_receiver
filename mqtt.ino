@@ -28,7 +28,7 @@ void SendDataMQTT(struct sensorData environment) {
   while (!client.connected()) {
     MonPrintf("Connecting to MQTT...");
 
-    if (client.connect("ESP32Client", mqttUser, mqttPassword)) {
+    if (client.connect("ESP32Client-James", mqttUser, mqttPassword)) {
       Serial.println("connected");
     } else {
       Serial.print("failed with state ");
