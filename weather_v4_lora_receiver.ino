@@ -74,8 +74,8 @@ GxIO_Class io(SPI, /*CS=5*/ SS, /*DC=*/17, /*RST=*/23);
 GxEPD_Class display(io, /*RST=*/23, /*BUSY=*/2);
 #else
 //Debasish - make edits here
-GxIO_Class io(SPI, /*CS=5*/ SS, /*DC=*/17, /*RST=*/23);
-GxEPD_Class display(io, /*RST=*/23, /*BUSY=*/2);
+GxIO_Class io(SPI, /*CS=5*/ SS, /*DC=*/27, /*RST=*/26);
+GxEPD_Class display(io, /*RST=*/26, /*BUSY=*/25);
 #endif
 
 #define SCREEN_WIDTH 400.0  // Set for landscape mode, don't remove the decimal place!

@@ -34,12 +34,13 @@ void SendDataMQTT(struct sensorData environment) {
       Serial.print("failed with state ");
       Serial.print(client.state());
       //delay(1000);
-      while(1);
+      while (1)
+        ;
     }
   }
   temperatureF = environment.temperatureC * 9 / 5 + 32;
   windSpeedMPH = environment.windSpeed * 1 / 1.609;
-  windSpeedMaxMPH = environment.windSpeedMax/1.609;
+  windSpeedMaxMPH = environment.windSpeedMax / 1.609;
   //TODO: Need to calculate mmHg properly
   mmHg = environment.barometricPressure;
   setWindDirection(environment.windDirectionADC);
@@ -60,7 +61,7 @@ void SendDataMQTT(struct sensorData environment) {
 
   MQTTPublish("sensors/windDirection/", (float)wind.degrees, true);
   MQTTPublish("sensors/windCardinalDirection/", wind.cardinalDirection, true);
-
+  MQTTPublish("sensors/ADCwindDirection/", environment.windDirectionADC, true);
 
   MQTTPublish("sensors/lux/", environment.lux, true);
   MQTTPublish("sensors/UVIndex/", environment.UVIndex, true);
@@ -93,7 +94,8 @@ void SendDataMQTT(struct diagnostics hardware) {
     } else {
       Serial.print("failed with state ");
       Serial.print(client.state());
-      while(1);
+      while (1)
+        ;
       //delay(1000);
     }
   }
