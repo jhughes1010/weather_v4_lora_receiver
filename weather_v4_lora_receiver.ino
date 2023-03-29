@@ -188,9 +188,9 @@ void cbk(int packetSize) {
 //===========================================
 void setup() {
   Serial.begin(115200);
-  #ifdef E_PAPER
+#ifdef E_PAPER
   display.init(115200);  // enable diagnostic output on Serial
-  #endif
+#endif
 
   //Enable WDT for any lock-up events
   esp_task_wdt_init(WDT_TIMEOUT, true);
@@ -223,9 +223,9 @@ void setup() {
   LoRa.enableCrc();
   LoRa.setSyncWord(SYNC);
   Serial.printf("LoRa receiver is online\n");
-  #ifdef E_PAPER
+#ifdef E_PAPER
   title();
-  #endif
+#endif
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 }
 
@@ -258,12 +258,12 @@ void loop() {
       PrintEnvironment(environment);
       SendDataMQTT(environment);
       Scount++;
-      #ifdef E_PAPER
+#ifdef E_PAPER
       RxWeather = obtain_wx_data(clientt, "weather");
       RxForecast = obtain_wx_data(clientt, "forecast");
       DisplayWeather();
       display.update();
-      #endif
+#endif
       timeOfReport = millis();
       displayFlag = false;
     }
@@ -272,12 +272,12 @@ void loop() {
       PrintHardware(hardware);
       SendDataMQTT(hardware);
       Hcount++;
-      #ifdef E_PAPER
+#ifdef E_PAPER
       RxWeather = obtain_wx_data(clientt, "weather");
       RxForecast = obtain_wx_data(clientt, "forecast");
       DisplayWeather();
       display.update();
-      #endif
+#endif
       timeOfReport = millis();
       displayFlag = false;
     } else {
@@ -285,16 +285,7 @@ void loop() {
       MonPrintf("Packet ignored. Count %i\n", Xcount);
     }
   }
-  //Serial heartbeat
-  if (millis() % 10000 < 10) {
-    static int count = 0;
-    count++;
-    MonPrintf(".");
-    if (count%6==0)
-    {
-      MonPrintf("\n");
-    }
-  }
+  heartbeat();
 
 #ifdef DEV_HELTEC_RECEIVER_LED
   LEDStatus(count, Scount, Hcount, Xcount);
@@ -365,4 +356,20 @@ void MonPrintf(const char* format, ...) {
 #ifdef SerialMonitor
   Serial.printf("%s", buffer);
 #endif
+}
+
+//===========================================
+// heartbeat: print a dot to the serial console
+// every 60s
+//===========================================
+void heartbeat(void) {
+  if (millis() % 60000 < 10) {
+    static int count = 0;
+    count++;
+    count = count % 60;
+    MonPrintf(".");
+    if (count == 0) {
+      MonPrintf("\n");
+    }
+  }
 }
