@@ -44,3 +44,4 @@ const int daylightOffset_sec = 3600;
 //James Hughes is using a Heltec_LoRa_v2 for receiver
 //===========================================
 //#define DEV_HELTEC_RECEIVER
+#define E_PAPER

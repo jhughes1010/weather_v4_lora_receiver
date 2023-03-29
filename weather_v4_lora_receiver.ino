@@ -37,7 +37,8 @@
 #include <Wire.h>
 #endif
 #include <U8g2_for_Adafruit_GFX.h>
-//e-ink display support
+//e-paper display support
+#ifdef E_PAPER
 #include <GxEPD.h>
 #include <GxGDEW042T2/GxGDEW042T2.h>  // 4.2" b/w
 #include <GxIO/GxIO_SPI/GxIO_SPI.h>
@@ -67,8 +68,10 @@ Forecast_record_type WxConditions[1];
 Forecast_record_type WxForecast[max_readings];
 
 #include "common.h"
+#endif
 
 
+#ifdef E_PAPER
 #ifdef DEV_HELTEC_RECEIVER
 GxIO_Class io(SPI, /*CS=5*/ SS, /*DC=*/17, /*RST=*/23);
 GxEPD_Class display(io, /*RST=*/23, /*BUSY=*/2);
@@ -89,6 +92,7 @@ enum alignment { LEFT,
                  RIGHT,
                  CENTER };
 U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
+#endif
 
 String rssi = "RSSI --";
 String packSize = "--";
@@ -184,7 +188,9 @@ void cbk(int packetSize) {
 //===========================================
 void setup() {
   Serial.begin(115200);
+  #ifdef E_PAPER
   display.init(115200);  // enable diagnostic output on Serial
+  #endif
 
   //Enable WDT for any lock-up events
   esp_task_wdt_init(WDT_TIMEOUT, true);
@@ -217,7 +223,9 @@ void setup() {
   LoRa.enableCrc();
   LoRa.setSyncWord(SYNC);
   Serial.printf("LoRa receiver is online\n");
+  #ifdef E_PAPER
   title();
+  #endif
   configTime(gmtOffset_sec, daylightOffset_sec, ntpServer);
 }
 
@@ -250,10 +258,12 @@ void loop() {
       PrintEnvironment(environment);
       SendDataMQTT(environment);
       Scount++;
+      #ifdef E_PAPER
       RxWeather = obtain_wx_data(clientt, "weather");
       RxForecast = obtain_wx_data(clientt, "forecast");
       DisplayWeather();
       display.update();
+      #endif
       timeOfReport = millis();
       displayFlag = false;
     }
@@ -262,27 +272,42 @@ void loop() {
       PrintHardware(hardware);
       SendDataMQTT(hardware);
       Hcount++;
+      #ifdef E_PAPER
       RxWeather = obtain_wx_data(clientt, "weather");
       RxForecast = obtain_wx_data(clientt, "forecast");
       DisplayWeather();
       display.update();
+      #endif
       timeOfReport = millis();
       displayFlag = false;
     } else {
       Xcount++;
+      MonPrintf("Packet ignored. Count %i\n", Xcount);
     }
+  }
+  //Serial heartbeat
+  if (millis() % 10000 < 10) {
+    static int count = 0;
+    count++;
+    MonPrintf(".");
+    if (count%6==0)
+    {
+      MonPrintf("\n");
+    }
+  }
 
 #ifdef DEV_HELTEC_RECEIVER_LED
-    LEDStatus(count, Scount, Hcount, Xcount);
+  LEDStatus(count, Scount, Hcount, Xcount);
 #endif
-  }
-  delay(10);
 
+  delay(10);
+#ifdef E_PAPER
   //TX packet not received in some time???
   if (!displayFlag && millis() - timeOfReport > 30 * 60 * 1000) {
     displayError();
     displayFlag = true;
   }
+#endif
 }
 
 //===========================================

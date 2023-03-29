@@ -1,4 +1,4 @@
-
+#ifdef E_PAPER
 //U8G2_FOR_ADAFRUIT_GFX u8g2Fonts;
 
 //===========================================
@@ -716,3 +716,4 @@ void Nodata(int x, int y, bool IconSize, String IconName) {
   drawString(x - 3, y - 8, "?", CENTER);
   u8g2Fonts.setFont(u8g2_font_helvB08_tf);
 }
+#endif
