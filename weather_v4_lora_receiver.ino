@@ -249,7 +249,7 @@ void loop() {
   if (packetSize) {
     count++;
     cbk(packetSize);
-    Serial.printf("Packet size: %i\n", packetSize);
+    Serial.printf("\n\n\nPacket size: %i\n", packetSize);
 
     MonPrintf("Environment deviceID %x\n", environment.deviceID);
     MonPrintf("Hardware deviceID %x\n", hardware.deviceID);
@@ -363,7 +363,7 @@ void MonPrintf(const char* format, ...) {
 // every 60s
 //===========================================
 void heartbeat(void) {
-  if (millis() % 60000 < 10) {
+  if (millis() % 10000 < 10) {
     static int count = 0;
     count++;
     count = count % 60;
