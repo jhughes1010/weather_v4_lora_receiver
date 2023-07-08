@@ -17,11 +17,13 @@
                   Explicitly checking both packet sizes before memcpy
                   Added WDT of 30 sec in case of hang up in loop() 
                   Set sender and receiver sync word to filter correct transmissions
-                  Add 10 sec heartbeat LED for Heltec PCB                
+                  Add 10 sec heartbeat LED for Heltec PCB   
+
+   1.1.3 07-08-23 Removed Blynk header file reference and replace esp_wifi with WiFi
 */
 
 //Hardware build target: ESP32
-#define VERSION "1.1.2"
+#define VERSION "1.1.3"
 
 
 //#include "heltec.h"
@@ -29,10 +31,8 @@
 #include <spi.h>
 
 #include "config.h"
-#include <esp_wifi.h>
+#include <WiFi.h>
 #include <esp_task_wdt.h>
-//#include <time.h>
-#include <BlynkSimpleEsp32.h>
 #include <PubSubClient.h>
 #ifdef DEV_HELTEC_RECEIVER
 #include <Wire.h>
