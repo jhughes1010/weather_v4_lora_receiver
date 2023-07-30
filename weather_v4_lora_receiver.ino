@@ -20,15 +20,34 @@
                   Add 10 sec heartbeat LED for Heltec PCB   
 
    1.1.3 07-08-23 Removed Blynk header file reference and replace esp_wifi with WiFi
+
+   1.2.0 07-29-23 Support for e-paper (4.2in Waveshare)
+                  Basic, raw data output, nothing fancy
 */
 
 //Hardware build target: ESP32
-#define VERSION "1.1.3"
+#define VERSION "1.1.4"
 
 
 //#include "heltec.h"
 #include <LoRa.h>
 #include <spi.h>
+
+#include <GxEPD.h>
+#include <GxGDEW042T2/GxGDEW042T2.h>  // 4.2" b/w
+#include <GxIO/GxIO_SPI/GxIO_SPI.h>
+#include <GxIO/GxIO.h>
+
+
+
+// e-paper pins mapping
+#define CS 5
+#define DC 27
+#define DISP_RST 26
+#define BUSY 25
+
+GxIO_Class io(SPI, CS, DC, DISP_RST);
+GxEPD_Class display(io, DISP_RST, BUSY);
 
 #include "config.h"
 #include <WiFi.h>
@@ -144,7 +163,8 @@ void setup() {
 #endif
   if (!LoRa.begin(BAND)) {
     Serial.println("Starting LoRa failed!");
-    while (1);
+    while (1)
+      ;
   }
   LoRa.receive();
   wifi_connect();
@@ -155,6 +175,12 @@ void setup() {
   LoRa.enableCrc();
   LoRa.setSyncWord(SYNC);
   Serial.printf("LoRa receiver is online\n");
+
+  // Initialize the display
+  display.init();
+  //display.setRotation(1);             // Set the rotation if needed (0, 1, 2, or 3)
+  display.setTextColor(GxEPD_BLACK);  // Set the text color to black
+  eTitle();
 }
 
 //===========================================
@@ -163,6 +189,7 @@ void setup() {
 void loop() {
   esp_task_wdt_reset();
   static int count = 0, Scount = 0, Hcount = 0, Xcount = 0;
+  int upTimeSeconds = 0;
   int packetSize = LoRa.parsePacket();
 
   environment.deviceID = 0;
@@ -194,6 +221,16 @@ void loop() {
 #endif
   }
   delay(10);
+  if (millis() % 60000 <= 200) {
+    MonPrintf(".");
+    upTimeSeconds = millis() / 60000;
+
+    display.fillScreen(GxEPD_WHITE);
+    eUpdate(count, Hcount, Scount, Xcount, upTimeSeconds);
+    eSensors();
+    eHardware();
+    display.update();
+  }
 }
 
 //===========================================
@@ -251,4 +288,113 @@ void MonPrintf(const char* format, ...) {
 #ifdef SerialMonitor
   Serial.printf("%s", buffer);
 #endif
+}
+
+void eTitle(void) {
+
+  // Set the text size and cursor position
+  display.setTextSize(2);
+  display.setCursor(20, 20);
+  display.print(" Weather Station V4.0 ");
+
+  display.setCursor(60, 180);
+  display.print("Debasish Dutta");
+  display.setCursor(60, 210);
+  display.print("James Hughes 2023");
+
+  // Update the display
+  display.update();
+  delay(2000);
+}
+
+void eUpdate(int count, int hardware, int sensor, int ignore, int upTimeSeconds) {
+  int xStart, yStart;
+  //int x, xOffset;
+
+
+  display.setCursor(5, 281);
+  display.setTextSize(2);
+  display.print(count);
+  display.print(" ");
+  display.print(sensor);
+  display.print(" ");
+  display.print(hardware);
+  display.print(" ");
+  display.print(ignore);
+  display.print(" ");
+  display.print(upTimeSeconds);
+}
+
+void eSensors(void) {
+  int xS, yS, y, yOffset;
+
+  xS = 205;
+  yS = 5;
+  yOffset = 22;
+  y = yS;
+
+  display.setTextSize(2);
+  display.drawRect(200, 0, 200, 280, GxEPD_BLACK);
+  display.setCursor(xS, yS);
+  display.print("Sensors:");
+  //display.update();
+  y += yOffset;
+  display.setCursor(xS, y);
+  display.print("TempC:");
+  display.print(environment.temperatureC);
+
+  y += yOffset;
+  display.setCursor(xS, y);
+  display.print("Rel Hum:");
+  display.print(environment.humidity);
+
+  y += yOffset;
+  display.setCursor(xS, y);
+  display.print("mmHg:");
+  display.print(environment.barometricPressure);
+
+  y += yOffset;
+  display.setCursor(xS, y);
+  display.print("Dir:");
+  display.print(environment.windDirectionADC);
+  display.print(" sp:");
+  display.print(environment.windSpeedMax);
+
+  y += yOffset;
+  display.setCursor(xS, y);
+  display.print("Rn 1h:");
+  display.print(environment.rainTicks60m);
+
+  y += yOffset;
+  display.setCursor(xS, y);
+  display.print("Rn 24h:");
+  display.print(environment.rainTicks24h);
+
+    y += yOffset;
+  display.setCursor(xS, y);
+  display.print("Lux:");
+  display.print(environment.lux);
+}
+
+void eHardware(void) {
+  int xS, yS, y, yOffset;
+
+  xS = 5;
+  yS = 5;
+  yOffset = 22;
+  y = yS;
+
+  display.setTextSize(2);
+  display.drawRect(0, 0, 200, 280, GxEPD_BLACK);
+  display.setCursor(xS, yS);
+  display.print("Hardware:");
+  y += yOffset;
+  display.setCursor(xS, y);
+  display.print("Solar:");
+  display.print(hardware.solarADC);
+
+  y += yOffset;
+  display.setCursor(xS, y);
+  display.print("Battery:");
+  display.print(hardware.batteryADC);
 }
