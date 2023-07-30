@@ -21,8 +21,9 @@
 
    1.1.3 07-08-23 Removed Blynk header file reference and replace esp_wifi with WiFi
 
-   1.2.0 07-29-23 Support for e-paper (4.2in Waveshare)
+   1.2.0 07-30-23 Support for e-paper (4.2in Waveshare)
                   Basic, raw data output, nothing fancy
+                  Output hardware and environment packet sizes as they need to match TX
 */
 
 //Hardware build target: ESP32
@@ -181,6 +182,10 @@ void setup() {
   //display.setRotation(1);             // Set the rotation if needed (0, 1, 2, or 3)
   display.setTextColor(GxEPD_BLACK);  // Set the text color to black
   eTitle();
+
+  //data structure stats
+  MonPrintf("Hardware size: %i\n",sizeof(hardware));
+  MonPrintf("Sensor size: %i\n",sizeof(environment));
 }
 
 //===========================================
