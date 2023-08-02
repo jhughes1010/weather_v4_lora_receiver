@@ -24,10 +24,11 @@
    1.2.0 07-30-23 Support for e-paper (4.2in Waveshare)
                   Basic, raw data output, nothing fancy
                   Output hardware and environment packet sizes as they need to match TX
+                  #define for optional e-paper display
 */
 
 //Hardware build target: ESP32
-#define VERSION "1.1.4"
+#define VERSION "1.2.0"
 
 
 //#include "heltec.h"
@@ -177,21 +178,24 @@ void setup() {
   LoRa.setSyncWord(SYNC);
   Serial.printf("LoRa receiver is online\n");
 
+#ifdef E_PAPER
   // Initialize the display
   display.init();
-  //display.setRotation(1);             // Set the rotation if needed (0, 1, 2, or 3)
+  display.setRotation(0);             // Set the rotation if needed (0, 1, 2, or 3)
   display.setTextColor(GxEPD_BLACK);  // Set the text color to black
   eTitle();
+#endif
 
   //data structure stats
-  MonPrintf("Hardware size: %i\n",sizeof(hardware));
-  MonPrintf("Sensor size: %i\n",sizeof(environment));
+  MonPrintf("Hardware size: %i\n", sizeof(hardware));
+  MonPrintf("Sensor size: %i\n", sizeof(environment));
 }
 
 //===========================================
 // loop:
 //===========================================
 void loop() {
+  static bool firstUpdate = true;
   esp_task_wdt_reset();
   static int count = 0, Scount = 0, Hcount = 0, Xcount = 0;
   int upTimeSeconds = 0;
@@ -226,15 +230,17 @@ void loop() {
 #endif
   }
   delay(10);
-  if (millis() % 60000 <= 200) {
+  if (firstUpdate | millis() % 60000 <= 200) {
+    firstUpdate = false;
     MonPrintf(".");
     upTimeSeconds = millis() / 60000;
-
+#ifdef E_PAPER
     display.fillScreen(GxEPD_WHITE);
     eUpdate(count, Hcount, Scount, Xcount, upTimeSeconds);
     eSensors();
     eHardware();
     display.update();
+#endif
   }
 }
 
@@ -305,7 +311,10 @@ void eTitle(void) {
   display.setCursor(60, 180);
   display.print("Debasish Dutta");
   display.setCursor(60, 210);
-  display.print("James Hughes 2023");
+  display.println("James Hughes 2023");
+  display.setCursor(60, 230);
+  display.print("Ver: ");
+  display.println(VERSION);
 
   // Update the display
   display.update();
@@ -375,7 +384,7 @@ void eSensors(void) {
   display.print("Rn 24h:");
   display.print(environment.rainTicks24h);
 
-    y += yOffset;
+  y += yOffset;
   display.setCursor(xS, y);
   display.print("Lux:");
   display.print(environment.lux);

@@ -98,8 +98,8 @@ void SendDataMQTT(struct diagnostics hardware) {
     }
   }
 
-  vSolar = (float)hardware.solarADC / 202;
-  vBattery = (float)hardware.batteryADC / 379;
+  vSolar = (float)hardware.solarADC / ADCSolar;
+  vBattery = (float)hardware.batteryADC / ADCBattery;
 
   MQTTPublish("hardware/boot/", (int)hardware.bootCount, true);
   MQTTPublish("hardware/rssi/", (int)rssi_lora, true);
