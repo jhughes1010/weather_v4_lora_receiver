@@ -25,10 +25,12 @@
                   Basic, raw data output, nothing fancy
                   Output hardware and environment packet sizes as they need to match TX
                   #define for optional e-paper display
+
+   1.2.1 08-06-23 Addition of Battery and Solar voltages in addition to ADC values
 */
 
 //Hardware build target: ESP32
-#define VERSION "1.2.0"
+#define VERSION "1.2.1"
 
 
 //#include "heltec.h"
@@ -222,6 +224,7 @@ void loop() {
       PrintHardware(hardware);
       SendDataMQTT(hardware);
       Hcount++;
+      hardware.bootCount = hardware.bootCount % 1440;
     } else {
       Xcount++;
     }
@@ -409,6 +412,23 @@ void eHardware(void) {
 
   y += yOffset;
   display.setCursor(xS, y);
+  display.print("Solar V:");
+  float vSolar = (float)hardware.solarADC/ADCBattery;
+  display.print(vSolar);
+
+  y += yOffset;
+  display.setCursor(xS, y);
   display.print("Battery:");
   display.print(hardware.batteryADC);
+
+  y += yOffset;
+  display.setCursor(xS, y);
+  display.print("Battery V:");
+  float vBat = (float)hardware.batteryADC/ADCBattery;
+  display.print(vBat);
+
+  y += yOffset;
+  display.setCursor(xS, y);
+  display.print("BME Temp:");
+  display.print(hardware.BMEtemperature);
 }
