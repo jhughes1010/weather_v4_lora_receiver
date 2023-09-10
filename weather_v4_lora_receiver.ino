@@ -27,10 +27,13 @@
                   #define for optional e-paper display
 
    1.2.1 08-06-23 Addition of Battery and Solar voltages in addition to ADC values
+
+   1.2.2 09-09-23 Correctly calculate inHg
+                  Hearbeat tweaks '.' on Serial port
 */
 
 //Hardware build target: ESP32
-#define VERSION "1.2.1"
+#define VERSION "1.2.2"
 
 
 //#include "heltec.h"
@@ -233,17 +236,21 @@ void loop() {
 #endif
   }
   delay(10);
-  if (firstUpdate | millis() % 60000 <= 200) {
-    firstUpdate = false;
+  if (firstUpdate | millis() % 10000 < 5) {
     MonPrintf(".");
     upTimeSeconds = millis() / 60000;
+
+
 #ifdef E_PAPER
-    display.fillScreen(GxEPD_WHITE);
-    eUpdate(count, Hcount, Scount, Xcount, upTimeSeconds);
-    eSensors();
-    eHardware();
-    display.update();
+    if (firstUpdate | millis() % 60000 < 500) {
+      display.fillScreen(GxEPD_WHITE);
+      eUpdate(count, Hcount, Scount, Xcount, upTimeSeconds);
+      eSensors();
+      eHardware();
+      display.update();
+    }
 #endif
+    firstUpdate = false;
   }
 }
 
@@ -257,7 +264,6 @@ void HexDump(int size) {
   char* p = (char*)&environment;
 
   for (x = 0; x < size; x++) {
-    //ch = *(p+x);
     Serial.printf("%02X ", p[x]);
   }
   Serial.println();
@@ -367,8 +373,8 @@ void eSensors(void) {
 
   y += yOffset;
   display.setCursor(xS, y);
-  display.print("mmHg:");
-  display.print(environment.barometricPressure);
+  display.print("mbar:");
+  display.print(environment.barometricPressure/100);
 
   y += yOffset;
   display.setCursor(xS, y);
@@ -413,7 +419,7 @@ void eHardware(void) {
   y += yOffset;
   display.setCursor(xS, y);
   display.print("Solar V:");
-  float vSolar = (float)hardware.solarADC/ADCBattery;
+  float vSolar = (float)hardware.solarADC / ADCBattery;
   display.print(vSolar);
 
   y += yOffset;
@@ -424,7 +430,7 @@ void eHardware(void) {
   y += yOffset;
   display.setCursor(xS, y);
   display.print("Battery V:");
-  float vBat = (float)hardware.batteryADC/ADCBattery;
+  float vBat = (float)hardware.batteryADC / ADCBattery;
   display.print(vBat);
 
   y += yOffset;

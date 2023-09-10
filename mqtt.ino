@@ -18,7 +18,7 @@ void SendDataMQTT(struct sensorData environment) {
   float temperatureF;
   float windSpeedMPH;
   float windSpeedMaxMPH;
-  float mmHg;
+  float inHg, mmHg;
   float vBatttery, vSolar;
 
   //int hourPtr = timeinfo.tm_hour;
@@ -34,37 +34,38 @@ void SendDataMQTT(struct sensorData environment) {
       Serial.print("failed with state ");
       Serial.print(client.state());
       //delay(1000);
-      while(1);
+      while (1)
+        ;
     }
   }
   temperatureF = environment.temperatureC * 9 / 5 + 32;
   windSpeedMPH = environment.windSpeed * 1 / 1.609;
-  windSpeedMaxMPH = environment.windSpeedMax/1.609;
-  //TODO: Need to calculate mmHg properly
-  mmHg = environment.barometricPressure;
+  windSpeedMaxMPH = environment.windSpeedMax / 1.609;
+  inHg = environment.barometricPressure * 0.0002953 + OFFSET_IN;
+  mmHg = environment.barometricPressure * 0.0002953 * 25.4 + OFFSET_MM;
   setWindDirection(environment.windDirectionADC);
 
-  MQTTPublish("sensors/imperial/temperature/", (int)temperatureF, true);
-  MQTTPublish("sensors/imperial/windSpeed/", (float)windSpeedMPH, true);
-  MQTTPublish("sensors/imperial/windSpeedMax/", (float)windSpeedMaxMPH, true);
-  MQTTPublish("sensors/imperial/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011), true);
-  MQTTPublish("sensors/imperial/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011), true);
-  MQTTPublish("sensors/imperial/pressure/", mmHg, true);
+  MQTTPublish("sensors/imperial/temperature/", (int)temperatureF, PERSISTANCE);
+  MQTTPublish("sensors/imperial/windSpeed/", (float)windSpeedMPH, PERSISTANCE);
+  MQTTPublish("sensors/imperial/windSpeedMax/", (float)windSpeedMaxMPH, PERSISTANCE);
+  MQTTPublish("sensors/imperial/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011), PERSISTANCE);
+  MQTTPublish("sensors/imperial/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011), PERSISTANCE);
+  MQTTPublish("sensors/imperial/pressure/", inHg, PERSISTANCE);
 
-  MQTTPublish("sensors/metric/windSpeed/", (float)environment.windSpeed, true);
-  MQTTPublish("sensors/metric/windSpeedMax/", (float)environment.windSpeedMax, true);
-  MQTTPublish("sensors/metric/temperature/", (int)environment.temperatureC, true);
-  MQTTPublish("sensors/metric/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011 * 25.4), true);
-  MQTTPublish("sensors/metric/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011 * 25.4), true);
-  MQTTPublish("sensors/metric/pressure/", environment.barometricPressure, true);
+  MQTTPublish("sensors/metric/windSpeed/", (float)environment.windSpeed, PERSISTANCE);
+  MQTTPublish("sensors/metric/windSpeedMax/", (float)environment.windSpeedMax, PERSISTANCE);
+  MQTTPublish("sensors/metric/temperature/", (int)environment.temperatureC, PERSISTANCE);
+  MQTTPublish("sensors/metric/rainfall/rainfall24/", (float)(environment.rainTicks24h * 0.011 * 25.4), PERSISTANCE);
+  MQTTPublish("sensors/metric/rainfall/rainfall60m/", (float)(environment.rainTicks60m * 0.011 * 25.4), PERSISTANCE);
+  MQTTPublish("sensors/metric/pressure/", mmHg, PERSISTANCE);
 
-  MQTTPublish("sensors/windDirection/", (float)wind.degrees, true);
-  MQTTPublish("sensors/windCardinalDirection/", wind.cardinalDirection, true);
+  MQTTPublish("sensors/windDirection/", (float)wind.degrees, PERSISTANCE);
+  MQTTPublish("sensors/windCardinalDirection/", wind.cardinalDirection, PERSISTANCE);
 
 
-  MQTTPublish("sensors/lux/", environment.lux, true);
-  MQTTPublish("sensors/UVIndex/", environment.UVIndex, true);
-  MQTTPublish("sensors/relHum/", environment.humidity, true);
+  MQTTPublish("sensors/lux/", environment.lux, PERSISTANCE);
+  MQTTPublish("sensors/UVIndex/", environment.UVIndex, PERSISTANCE);
+  MQTTPublish("sensors/relHum/", environment.humidity, PERSISTANCE);
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
   MonPrintf("Disconnected\n");
@@ -93,7 +94,8 @@ void SendDataMQTT(struct diagnostics hardware) {
     } else {
       Serial.print("failed with state ");
       Serial.print(client.state());
-      while(1);
+      while (1)
+        ;
       //delay(1000);
     }
   }
@@ -101,18 +103,18 @@ void SendDataMQTT(struct diagnostics hardware) {
   vSolar = (float)hardware.solarADC / ADCSolar;
   vBattery = (float)hardware.batteryADC / ADCBattery;
 
-  MQTTPublish("hardware/boot/", (int)hardware.bootCount, true);
-  MQTTPublish("hardware/rssi/", (int)rssi_lora, true);
-  MQTTPublish("hardware/vBattery/", (float)vBattery, true);
-  MQTTPublish("hardware/vSolar/", (float)vSolar, true);
-  MQTTPublish("hardware/chargeStatusB/", (bool)hardware.chargeStatusB, true);
-  MQTTPublish("hardware/caseTemperature/", hardware.BMEtemperature, true);
-  MQTTPublish("hardware/ADCbattery/", (int)hardware.batteryADC, true);
-  MQTTPublish("hardware/ADCsolar/", (int)hardware.solarADC, true);
-  //MQTTPublish("ESPcoreF/", (int)hardware->coreF, true);
-  MQTTPublish("hardware/ESPcoreC/", (int)hardware.coreC, true);
-  //MQTTPublish("timeEnabled/", (int)elapsedTime, true);
-  MQTTPublish("hardware/lowBattery/", false, true);  //TODO
+  MQTTPublish("hardware/boot/", (int)hardware.bootCount, PERSISTANCE);
+  MQTTPublish("hardware/rssi/", (int)rssi_lora, PERSISTANCE);
+  MQTTPublish("hardware/vBattery/", (float)vBattery, PERSISTANCE);
+  MQTTPublish("hardware/vSolar/", (float)vSolar, PERSISTANCE);
+  MQTTPublish("hardware/chargeStatusB/", (bool)hardware.chargeStatusB, PERSISTANCE);
+  MQTTPublish("hardware/caseTemperature/", hardware.BMEtemperature, PERSISTANCE);
+  MQTTPublish("hardware/ADCbattery/", (int)hardware.batteryADC, PERSISTANCE);
+  MQTTPublish("hardware/ADCsolar/", (int)hardware.solarADC, PERSISTANCE);
+  //MQTTPublish("ESPcoreF/", (int)hardware->coreF, PERSISTANCE);
+  MQTTPublish("hardware/ESPcoreC/", (int)hardware.coreC, PERSISTANCE);
+  //MQTTPublish("timeEnabled/", (int)elapsedTime, PERSISTANCE);
+  MQTTPublish("hardware/lowBattery/", false, PERSISTANCE);  //TODO
   MonPrintf("Issuing mqtt disconnect\n");
   client.disconnect();
   MonPrintf("Disconnected\n");

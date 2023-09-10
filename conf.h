@@ -27,6 +27,7 @@ const int mqttPort = 1883;
 const char* mqttUser = "";
 const char* mqttPassword = "";
 const char mainTopic[20] = "RoyalGorge/";
+#define PERSISTANCE false
 
 //===========================================
 //Timezone information
@@ -45,6 +46,12 @@ const int daylightOffset_sec = 3600;
 //===========================================
 #define ADCBattery 371 
 #define ADCSolar 195
+
+//===========================================
+//Altitude offsets
+//===========================================
+#define OFFSET_IN 5.58 
+#define OFFSET_MM 141.7
 
 //===========================================
 //James Hughes is using a Heltec_LoRa_v2 for receiver
