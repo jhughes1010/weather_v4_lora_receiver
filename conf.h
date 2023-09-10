@@ -27,7 +27,7 @@ const int mqttPort = 1883;
 const char* mqttUser = "";
 const char* mqttPassword = "";
 const char mainTopic[20] = "RoyalGorge/";
-#define PERSISTANCE false
+#define RETAIN false
 
 //===========================================
 //Timezone information
