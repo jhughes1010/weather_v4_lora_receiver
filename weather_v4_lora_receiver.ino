@@ -374,7 +374,7 @@ void eSensors(void) {
   y += yOffset;
   display.setCursor(xS, y);
   display.print("mbar:");
-  display.print(environment.barometricPressure/100);
+  display.print(environment.barometricPressure / 100);
 
   y += yOffset;
   display.setCursor(xS, y);
@@ -419,7 +419,7 @@ void eHardware(void) {
   y += yOffset;
   display.setCursor(xS, y);
   display.print("Solar V:");
-  float vSolar = (float)hardware.solarADC / ADCBattery;
+  float vSolar = (float)hardware.solarADC / ADCSolar;
   display.print(vSolar);
 
   y += yOffset;
