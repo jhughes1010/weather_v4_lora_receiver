@@ -80,6 +80,10 @@ void SendDataMQTT(struct diagnostics hardware) {
   char bufferRain[10];
   char bufferRain24[10];
   float vBattery, vSolar;
+  int coreF;
+  static int rxCount = 0;
+
+  rxCount++;
 
 
   //int hourPtr = timeinfo.tm_hour;
@@ -102,7 +106,9 @@ void SendDataMQTT(struct diagnostics hardware) {
 
   vSolar = (float)hardware.solarADC / ADCSolar;
   vBattery = (float)hardware.batteryADC / ADCBattery;
+  coreF = (float)hardware.coreC * 1.8 + 32;
 
+  MQTTPublish("hardware/rxcount/", (int)rxCount, RETAIN);
   MQTTPublish("hardware/boot/", (int)hardware.bootCount, RETAIN);
   MQTTPublish("hardware/rssi/", (int)rssi_lora, RETAIN);
   MQTTPublish("hardware/vBattery/", (float)vBattery, RETAIN);
@@ -111,7 +117,7 @@ void SendDataMQTT(struct diagnostics hardware) {
   MQTTPublish("hardware/caseTemperature/", hardware.BMEtemperature, RETAIN);
   MQTTPublish("hardware/ADCbattery/", (int)hardware.batteryADC, RETAIN);
   MQTTPublish("hardware/ADCsolar/", (int)hardware.solarADC, RETAIN);
-  //MQTTPublish("ESPcoreF/", (int)hardware->coreF, RETAIN);
+  MQTTPublish("hardware/ESPcoreF/", (int)coreF, RETAIN);
   MQTTPublish("hardware/ESPcoreC/", (int)hardware.coreC, RETAIN);
   //MQTTPublish("timeEnabled/", (int)elapsedTime, RETAIN);
   MQTTPublish("hardware/lowBattery/", false, RETAIN);  //TODO

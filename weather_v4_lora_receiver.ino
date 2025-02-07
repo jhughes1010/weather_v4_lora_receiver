@@ -113,6 +113,12 @@ struct sensorData environment;
 struct diagnostics hardware;
 struct derived wind;
 
+esp_task_wdt_config_t twdt_config = {
+  .timeout_ms = WDT_TIMEOUT * 1000,
+  .idle_core_mask = 3,  // Bitmask of all cores
+  .trigger_panic = true,
+};
+
 //===========================================
 // LoRaData: acknowledge LoRa packet received on OLED
 //===========================================
@@ -152,8 +158,9 @@ void setup() {
   Serial.begin(115200);
 
   //Enable WDT for any lock-up events
-  esp_task_wdt_init(WDT_TIMEOUT, true);
-  esp_task_wdt_add(NULL);
+  esp_task_wdt_deinit();            //wdt is enabled by default, so we need to deinit it first
+  esp_task_wdt_init(&twdt_config);  //enable panic so ESP32 restarts
+  esp_task_wdt_add(NULL);           //add current thread to WDT watch
 
 #ifdef DEV_HELTEC_RECEIVER
   led.begin();
@@ -203,7 +210,7 @@ void loop() {
   static bool firstUpdate = true;
   esp_task_wdt_reset();
   static int count = 0, Scount = 0, Hcount = 0, Xcount = 0;
-  int upTimeSeconds = 0;
+  int upTimeMinutes = 0;
   int packetSize = LoRa.parsePacket();
 
   environment.deviceID = 0;
@@ -238,13 +245,13 @@ void loop() {
   delay(10);
   if (firstUpdate | millis() % 10000 < 5) {
     MonPrintf(".");
-    upTimeSeconds = millis() / 60000;
+    upTimeMinutes = millis() / 60000;
 
 
 #ifdef E_PAPER
-    if (firstUpdate | millis() % 60000 < 500) {
+    if (firstUpdate | millis() % 60000 < 2000) {
       display.fillScreen(GxEPD_WHITE);
-      eUpdate(count, Hcount, Scount, Xcount, upTimeSeconds);
+      eUpdate(count, Hcount, Scount, Xcount, upTimeMinutes);
       eSensors();
       eHardware();
       display.update();
@@ -252,6 +259,10 @@ void loop() {
 #endif
     firstUpdate = false;
   }
+  //force reset
+  //while (upTimeMinutes >= 1) {
+  //  MonPrintf("RESET COMING... \n");
+  //}
 }
 
 //===========================================
@@ -320,7 +331,7 @@ void eTitle(void) {
   display.setCursor(60, 180);
   display.print("Debasish Dutta");
   display.setCursor(60, 210);
-  display.println("James Hughes 2023");
+  display.println("James Hughes 2024");
   display.setCursor(60, 230);
   display.print("Ver: ");
   display.println(VERSION);
